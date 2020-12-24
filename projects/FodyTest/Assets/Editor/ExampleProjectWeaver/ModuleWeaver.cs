@@ -9,7 +9,7 @@ namespace ExampleProjectWeaver
 
         public override void Execute()
         {
-            Debug.Log("Executing module weaver");//" " + ModuleDefinition.Assembly.FullName);
+            Debug.Log("Executing module weaver " + ModuleDefinition.Assembly.FullName);
         }
 
         public override IEnumerable<string> GetAssembliesForScanning()
