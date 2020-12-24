@@ -172,6 +172,7 @@ public static class FodyAssemblyPostProcessor
             // Figure out if there's an pdb/mdb to go with it
             if (File.Exists(pdbPath))
             {
+                Debug.Log("Found pdb path: " + pdbPath);
                 readerParameters.ReadSymbols = true;
                 readerParameters.SymbolReaderProvider = new Mono.Cecil.Pdb.PdbReaderProvider();
                 writerParameters.WriteSymbols = true;
@@ -179,6 +180,7 @@ public static class FodyAssemblyPostProcessor
             }
             else if (File.Exists(mdbPath))
             {
+                Debug.Log("Found mdb path: " + mdbPath);
                 readerParameters.ReadSymbols = true;
                 readerParameters.SymbolReaderProvider = new Mono.Cecil.Mdb.MdbReaderProvider();
                 writerParameters.WriteSymbols = true;
@@ -186,6 +188,7 @@ public static class FodyAssemblyPostProcessor
             }
             else
             {
+                Debug.Log("Found no debug symbols");
                 readerParameters.ReadSymbols = false;
                 readerParameters.SymbolReaderProvider = null;
                 writerParameters.WriteSymbols = false;
@@ -193,8 +196,9 @@ public static class FodyAssemblyPostProcessor
             }
 
             // Read assembly
+            Debug.Log("Read module");
             var module = ModuleDefinition.ReadModule(assemblyPath, readerParameters);
-
+            Debug.Log("Prepare weavers");
             PrepareWeaversForModule(weavers, module);
 
             try
@@ -457,4 +461,3 @@ public static class FodyAssemblyPostProcessor
         }
     }
 }
-
