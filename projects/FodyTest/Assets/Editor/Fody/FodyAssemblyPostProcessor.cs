@@ -187,17 +187,17 @@ public static class FodyAssemblyPostProcessor
                 Debug.Log("Found pdb path: " + pdbPath);
                 readerParameters.ReadSymbols = true;
                 readerParameters.SymbolReaderProvider = new Mono.Cecil.Pdb.PdbReaderProvider();
-                writerParameters.WriteSymbols = true;
-                writerParameters.SymbolWriterProvider = new Mono.Cecil.Mdb.MdbWriterProvider(); // pdb written out as mdb, as mono can't work with pdbs
+                // writerParameters.WriteSymbols = true;
+                // writerParameters.SymbolWriterProvider = new Mono.Cecil.Mdb.MdbWriterProvider(); // pdb written out as mdb, as mono can't work with pdbs
             }
-            else if (File.Exists(mdbPath))
-            {
-                Debug.Log("Found mdb path: " + mdbPath);
-                readerParameters.ReadSymbols = true;
-                readerParameters.SymbolReaderProvider = new Mono.Cecil.Mdb.MdbReaderProvider();
-                writerParameters.WriteSymbols = true;
-                writerParameters.SymbolWriterProvider = new Mono.Cecil.Mdb.MdbWriterProvider();
-            }
+            // else if (File.Exists(mdbPath))
+            // {
+            //     Debug.Log("Found mdb path: " + mdbPath);
+            //     readerParameters.ReadSymbols = true;
+            //     readerParameters.SymbolReaderProvider = new Mono.Cecil.Mdb.MdbReaderProvider();
+            //     writerParameters.WriteSymbols = true;
+            //     writerParameters.SymbolWriterProvider = new Mono.Cecil.Mdb.MdbWriterProvider();
+            // }
             else
             {
                 Debug.Log("Found no debug symbols");
