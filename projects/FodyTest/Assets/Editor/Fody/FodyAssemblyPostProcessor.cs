@@ -142,7 +142,7 @@ public static class FodyAssemblyPostProcessor
             EditorApplication.UnlockReloadAssemblies();
         }
 
-        //Debug.Log("Fody processor finished");
+        Debug.Log("Fody processor finished");
     }
 
     static void ProcessAssembliesIn(HashSet<string> assemblyPaths, IAssemblyResolver assemblyResolver)
@@ -221,6 +221,7 @@ public static class FodyAssemblyPostProcessor
                 {
                     Debug.Log("Writing processed assembly to " + assemblyPath);
                     module.Write(assemblyPath, writerParameters);
+                    // File.Move(assemblyPath, assemblyPath + ".original");
                     Debug.Log( "Done writing" );
                 }
             }
