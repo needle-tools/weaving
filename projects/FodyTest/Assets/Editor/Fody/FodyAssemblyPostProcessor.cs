@@ -219,6 +219,7 @@ public static class FodyAssemblyPostProcessor
                 Debug.Log( "Processing " + Path.GetFileName( assemblyPath ) );
                 if (ProcessAssembly(assemblyPath, module, weavers))
                 {
+                    Debug.Log("Writing processed assembly to " + assemblyPath);
                     module.Write(assemblyPath, writerParameters);
                     Debug.Log( "Done writing" );
                 }
