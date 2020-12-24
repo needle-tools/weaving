@@ -17,8 +17,9 @@ public static class FodyAssemblyPostProcessor
 {
     static HashSet<string> DefaultAssemblies = new HashSet<string>()
     {
-        "Assembly-CSharp.dll",
-        "Assembly-CSharp-firstpass.dll"
+        "SomeAssemblyToBeFixed.dll"
+        // "Assembly-CSharp.dll",
+        // "Assembly-CSharp-firstpass.dll"
     };
 
     [PostProcessBuildAttribute(1)]
@@ -82,21 +83,31 @@ public static class FodyAssemblyPostProcessor
             {
                 if (assembly.IsDynamic)
                     continue;
+
+                // Debug.Log("Found assembly: " + assembly.FullName);
+                // if (!assembly.FullName.Contains("SomeAssemblyToBeFixed"))
+                // {
+                //     Debug.Log("skip for now");
+                //     continue;
+                // }
             
                 try
                 {
                     // Only process assemblies which are in the project
-                    if( assembly.Location.Replace( '\\', '/' ).StartsWith( Application.dataPath.Substring( 0, Application.dataPath.Length - 7 ) )  &&
-                        !Path.GetFullPath(assembly.Location).StartsWith(assetPath)) //but not in the assets folder
+                    if( assembly.Location.Replace( '\\', '/' ).StartsWith( Application.dataPath.Substring( 0, Application.dataPath.Length - 7 ) )  
+                        // && !Path.GetFullPath(assembly.Location).StartsWith(assetPath) //but not in the assets folder
+                        )
                     {
+                        Debug.Log("Add assembly path at " + assembly.Location);
                         assemblyPaths.Add( assembly.Location );
                     }
 
                     if (!string.IsNullOrWhiteSpace(assembly.Location))
                     {
-                        Debug.Log("Add assembly at " + assembly.Location);
+                        var dir = Path.GetDirectoryName(assembly.Location);
+                        Debug.Log("Add assembly search dir " + dir);
                         // But always add the assembly folder to the search directories
-                        assemblySearchDirectories.Add(Path.GetDirectoryName(assembly.Location));
+                        assemblySearchDirectories.Add(dir);
                     }
                     else
                         Debug.LogWarning("Assembly " + assembly.FullName + " has an empty path. Skipping");
@@ -111,13 +122,14 @@ public static class FodyAssemblyPostProcessor
             // Create resolver
             var assemblyResolver = new DefaultAssemblyResolver();
             // Add all directories found in the project folder
-            foreach( String searchDirectory in assemblySearchDirectories )
+            foreach(var searchDirectory in assemblySearchDirectories )
             {
                 assemblyResolver.AddSearchDirectory( searchDirectory );
             }
             // Add path to the Unity managed dlls
             assemblyResolver.AddSearchDirectory( Path.GetDirectoryName( EditorApplication.applicationPath ) + "/Data/Managed" );
 
+            Debug.Log("We have " + assemblyPaths.Count + " assembly paths now");
             ProcessAssembliesIn(assemblyPaths, assemblyResolver);
         }
         catch (Exception e)
@@ -140,7 +152,7 @@ public static class FodyAssemblyPostProcessor
         readerParameters.AssemblyResolver = assemblyResolver; 
 
         // Create writer parameters
-        var writerParameters = new WriterParameters();
+        var writerParameters = new WriterParameters(); 
         var fodyConfig = GetFodySettings();
         if (fodyConfig != null)
         {
@@ -158,7 +170,7 @@ public static class FodyAssemblyPostProcessor
 
         var weavers = InitializeWeavers(fodyConfig, assemblyResolver);
         
-        Debug.Log("assemblyPaths: " + assemblyPaths.Count);
+        Debug.Log("assemblyPaths after filtering: " + assemblyPaths.Count);
 
         // Process any assemblies which need it
         foreach (var assemblyPath in assemblyPaths)

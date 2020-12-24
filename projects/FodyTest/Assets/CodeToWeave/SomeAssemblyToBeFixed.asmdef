@@ -1,3 +1,13 @@
-﻿{
-	"name": "SomeAssemblyToBeFixed"
+{
+    "name": "SomeAssemblyToBeFixed",
+    "references": [],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
 }
