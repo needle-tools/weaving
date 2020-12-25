@@ -12,6 +12,7 @@ using System.Xml;
 using Mono.Cecil.Pdb;
 using Assembly = System.Reflection.Assembly;
 using UnityEditor.Callbacks;
+using UnityEditor.Compilation;
 using UnityEngine.SceneManagement;
 
 public static class FodyAssemblyPostProcessor
@@ -60,7 +61,12 @@ public static class FodyAssemblyPostProcessor
     [InitializeOnLoadMethod]
     private static void Init()
     {
-        // File.Move(@"C:\git\weaving\projects\FodyTest\Library\ScriptAssemblies\SomeAssemblyToBeFixed.dll", @"C:\git\weaving\projects\FodyTest\Library\ScriptAssemblies\SomeAssemblyToBeFixed.1dll"); 
+        DoProcessing();
+        AssemblyReloadEvents.beforeAssemblyReload += OnBeforeReload;
+    }
+
+    private static void OnBeforeReload()
+    {
         DoProcessing();
     }
 

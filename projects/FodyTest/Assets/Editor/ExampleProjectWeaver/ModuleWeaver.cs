@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using Fody;
@@ -8,6 +10,10 @@ using UnityEngine;
 
 namespace ExampleProjectWeaver
 {
+    // https://www.codersblock.org/blog//2014/06/integrating-monocecil-with-unity.html
+    
+    // https://intellitect.com/creating-fody-addin/
+    
     public class ModuleWeaver : BaseModuleWeaver
     {
 
@@ -19,7 +25,6 @@ namespace ExampleProjectWeaver
         }
         
         
-        // https://intellitect.com/creating-fody-addin/
         
         public override void Execute()
         {
@@ -42,21 +47,23 @@ namespace ExampleProjectWeaver
             //Create Nop instruction to use as a starting point
             //for the rest of our instructions
  
-            var first = Instruction.Create( OpCodes.Ret );
+            var first = Instruction.Create( OpCodes.Nop );
             processor.InsertBefore( current, first );
             current = first;
  
-            //Insert all instructions for debug output after Nop 
-            // foreach ( Instruction instruction in GetInstructions( method ) )
-            // {
-            //     processor.InsertAfter( current, instruction );
-            //     current = instruction;
-            // }
+            // Insert all instructions for debug output after Nop 
+             foreach ( Instruction instruction in GetInstructions( method ) )
+             {
+                 processor.InsertAfter( current, instruction );
+                 current = instruction;
+             }
         }
         
         private static readonly MethodInfo _stringJoinMethod;
         private static readonly MethodInfo _stringFormatMethod;
         private static readonly MethodInfo _debugWriteLineMethod;
+        private static readonly MethodInfo _unityDebugLogMethod;
+        
         static ModuleWeaver()
         {
             //Find string.Join(string, object[]) method
@@ -93,18 +100,28 @@ namespace ExampleProjectWeaver
                     return parameters.Length == 1 &&
                            parameters[0].ParameterType == typeof( string );
                 } );
+            
+            _unityDebugLogMethod = typeof( UnityEngine.Debug )
+                .GetMethods()
+                .Where( x => x.Name == nameof( UnityEngine.Debug.Log ) )
+                .Single( x =>
+                {
+                    var parameters = x.GetParameters();
+                    return parameters.Length == 1 &&
+                           parameters[0].ParameterType == typeof( object );
+                } );
         }
         
         private IEnumerable<Instruction> GetInstructions( MethodDefinition method )
         {
-            yield return Instruction.Create( OpCodes.Ldstr, $"DEBUG: {method.Name}({{0}})" );
+            yield return Instruction.Create( OpCodes.Ldstr, $"Added Log Message to {method.Name}({{0}}) at " + DateTime.Now.ToString(CultureInfo.InvariantCulture));
             yield return Instruction.Create( OpCodes.Ldstr, "," );
  
             yield return Instruction.Create( OpCodes.Ldc_I4, method.Parameters.Count );
             yield return Instruction.Create( OpCodes.Newarr, ModuleDefinition.ImportReference( typeof( object ) ) );
  
             for ( int i = 0; i < method.Parameters.Count; i++ )
-            {
+            { 
                 yield return Instruction.Create( OpCodes.Dup );
                 yield return Instruction.Create( OpCodes.Ldc_I4, i );
                 yield return Instruction.Create( OpCodes.Ldarg, method.Parameters[i] );
@@ -115,7 +132,7 @@ namespace ExampleProjectWeaver
  
             yield return Instruction.Create( OpCodes.Call, ModuleDefinition.ImportReference( _stringJoinMethod ) );
             yield return Instruction.Create( OpCodes.Call, ModuleDefinition.ImportReference( _stringFormatMethod ) );
-            yield return Instruction.Create( OpCodes.Call, ModuleDefinition.ImportReference( _debugWriteLineMethod ) );
+            yield return Instruction.Create( OpCodes.Call, ModuleDefinition.ImportReference( _unityDebugLogMethod ) );
         }
 
 

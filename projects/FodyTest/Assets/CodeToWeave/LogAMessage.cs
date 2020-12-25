@@ -6,9 +6,13 @@ namespace CodeToWeave
     [ExecuteInEditMode]
     public class LogAMessage : MonoBehaviour
     {
-        private string Message = "Original Message";
+        private string Message = "Original Message.";
 
         private void OnEnable()
+        {
+        }
+
+        private void OnDisable()
         {
             Debug.Log(Message);
         }
