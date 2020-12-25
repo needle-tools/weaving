@@ -11,11 +11,13 @@ using Fody;
 using Mono.Cecil.Pdb;
 using Assembly = System.Reflection.Assembly;
 using UnityEditor.Callbacks;
+using UnityEditor.Compilation;
 
 
 [InitializeOnLoad]
 public static class FodyAssemblyPostProcessor
 {
+    // https://forum.unity.com/threads/solved-burst-and-mono-cecil.781148/#post-5201255
     public static bool InMemory = false;
     
     public static readonly HashSet<string> DefaultAssemblies = new HashSet<string>()
@@ -62,17 +64,33 @@ public static class FodyAssemblyPostProcessor
     static FodyAssemblyPostProcessor()
     {
         Debug.Log("INITIALIZE ON LOAD");
-        if(!InMemory)
-            DoProcessing(false);
+        // if(!InMemory)
+        //     DoProcessing(false);
         AssemblyReloadEvents.beforeAssemblyReload += OnBeforeReload;
         AssemblyReloadEvents.afterAssemblyReload += OnAfterReload;
+        // https://forum.unity.com/threads/solved-burst-and-mono-cecil.781148/#post-5201255
+        CompilationPipeline.compilationFinished += OnAfterCompilationFinished;
+        CompilationPipeline.assemblyCompilationFinished += OnAfterAssemblyCompilationFinished;
+    }
+
+    private static void OnAfterAssemblyCompilationFinished(string arg1, CompilerMessage[] arg2)
+    {
+        // TODO: if any assembly containing weaver changes we need to re weave everything
+        Debug.Log("Assembly compilation finished: " + arg1);
+    }
+
+    private static void OnAfterCompilationFinished(object obj)
+    {
+        Debug.Log("COMPILATION FINISHED " + obj);
+        if(!InMemory)
+            DoProcessing(false);
     }
 
     private static void OnBeforeReload()
     {
-        Debug.Log("BEFORE ASSEMBLY RELOAD");
-        if(!InMemory)
-            DoProcessing(false);
+        // Debug.Log("BEFORE ASSEMBLY RELOAD");
+        // if(!InMemory)DoProcessing
+        //     DoProcessing(false);
     }
 
     private static void OnAfterReload()
@@ -92,6 +110,8 @@ public static class FodyAssemblyPostProcessor
             EditorApplication.LockReloadAssemblies();
 
             var assetPath = Path.GetFullPath(Application.dataPath);
+            // TODO: not 2018 compatible
+            var packagePath = Path.GetFullPath(Application.dataPath + "/../Packages");
 
             // This will hold the paths to all the assemblies that will be processed
             HashSet<string> assemblyPaths = new HashSet<string>();
@@ -103,24 +123,32 @@ public static class FodyAssemblyPostProcessor
             foreach(var assembly in AppDomain.CurrentDomain.GetAssemblies())
             {
                 if (assembly.IsDynamic)
-                    continue;
+                    continue; 
 
-                // Debug.Log("Found assembly: " + assembly.FullName);
+
+                if (string.IsNullOrEmpty(assembly.Location))
+                {
+                    Debug.LogWarning("Assembly has no path: " + assembly.FullName + " -> skip");
+                    continue;
+                }
                 // if (!assembly.FullName.Contains("SomeAssemblyToBeFixed"))
                 // {
                 //     Debug.Log("skip for now");
                 //     continue;
                 // }
-            
+                
                 try
                 {
+                    var isAsset = Path.GetFullPath(assembly.Location).StartsWith(assetPath);
+                    var isPackageAsset = Path.GetFullPath(assembly.Location).StartsWith(packagePath);
                     // Only process assemblies which are in the project
                     if( assembly.Location.Replace( '\\', '/' ).StartsWith( Application.dataPath.Substring( 0, Application.dataPath.Length - 7 ) )  
-                        // && !Path.GetFullPath(assembly.Location).StartsWith(assetPath) //but not in the assets folder
+                        // && !isAsset && !isPackageAsset //but not in the assets folder
                         )
                     {
-                        Debug.Log("Add assembly path at " + assembly.Location);
-                        assemblyPaths.Add( assembly.Location );
+                        Debug.Log($"Add assembly {assembly.FullName} at " + assembly.Location);
+                        assemblyPaths.Add(assembly.Location);
+                        // if(isAsset || isPackageAsset)
                     }
 
                     if (!string.IsNullOrWhiteSpace(assembly.Location))
