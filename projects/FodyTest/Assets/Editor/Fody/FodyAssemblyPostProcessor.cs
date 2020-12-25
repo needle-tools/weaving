@@ -222,6 +222,7 @@ public static class FodyAssemblyPostProcessor
                 
             // Read assembly
             Debug.Log("Read module");
+            // TODO: test if/how we can patch in memory
             var fs = new FileStream(assemblyPath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite);
             var module = ModuleDefinition.ReadModule(fs, readerParameters);
             Debug.Log("Prepare weavers");
