@@ -6,6 +6,7 @@ using System.Reflection;
 using Fody;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+using Mono.Cecil.Rocks;
 using UnityEngine;
 
 namespace ExampleProjectWeaver
@@ -13,6 +14,11 @@ namespace ExampleProjectWeaver
     // https://www.codersblock.org/blog//2014/06/integrating-monocecil-with-unity.html
     
     // https://intellitect.com/creating-fody-addin/
+    
+    // C# to IL
+    // https://stackoverflow.com/questions/6574858/convert-c-sharp-code-to-il-code
+    // idea: similar to harmony create patch methods, marked with attribute. capture their IL in a module weaver and store it somewhere
+    // then in the injection replace the IL with the stored IL
     
     public class ModuleWeaver : BaseModuleWeaver
     {
@@ -43,7 +49,7 @@ namespace ExampleProjectWeaver
             Debug.Log("Process " + method.Name);
             ILProcessor processor = method.Body.GetILProcessor();
             Instruction current = method.Body.Instructions.First();
- 
+            
             //Create Nop instruction to use as a starting point
             //for the rest of our instructions
  
@@ -114,7 +120,7 @@ namespace ExampleProjectWeaver
         
         private IEnumerable<Instruction> GetInstructions( MethodDefinition method )
         {
-            yield return Instruction.Create( OpCodes.Ldstr, $"Added Log Message to {method.Name}({{0}}) at " + DateTime.Now.ToString(CultureInfo.InvariantCulture));
+            yield return Instruction.Create( OpCodes.Ldstr, $"123 Added Log Message to {method.Name}({{0}}) at " + DateTime.Now.ToString(CultureInfo.InvariantCulture));
             yield return Instruction.Create( OpCodes.Ldstr, "," );
  
             yield return Instruction.Create( OpCodes.Ldc_I4, method.Parameters.Count );

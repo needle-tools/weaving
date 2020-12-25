@@ -61,7 +61,7 @@ public static class FodyAssemblyPostProcessor
     [InitializeOnLoadMethod]
     private static void Init()
     {
-        DoProcessing();
+        // DoProcessing();
         AssemblyReloadEvents.beforeAssemblyReload += OnBeforeReload;
     }
 
@@ -252,7 +252,8 @@ public static class FodyAssemblyPostProcessor
 
     private static bool ProcessAssembly(string assemblyPath, ModuleDefinition module, IEnumerable<WeaverEntry> weavers)
     {
-        if (module.Types.Any(t => t.Name == "ProcessedByFody"))
+        var processedMarkerType = module.Types.FirstOrDefault(t => t.FullName == "ProcessedByFody");
+        if (processedMarkerType != null) 
         {
             Debug.LogWarning($"Skipping {assemblyPath} as it is already processed");
             return false;
