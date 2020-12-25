@@ -3,13 +3,11 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
-using Fody;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
-using Mono.Cecil.Rocks;
 using UnityEngine;
 
-namespace ExampleProjectWeaver
+namespace Fody.DebugLogWeaver
 {
     // https://www.codersblock.org/blog//2014/06/integrating-monocecil-with-unity.html
     
@@ -29,19 +27,16 @@ namespace ExampleProjectWeaver
             yield return "mscorlib";
             yield return "UnityEngine";
         }
-        
-        
-        
         public override void Execute()
         {
-            Debug.Log("Executing module weaver " + ModuleDefinition.Assembly.FullName);
-            foreach(var type in ModuleDefinition.Types)
-            {
-                foreach ( MethodDefinition method in type.Methods )
-                {
-                    ProcessMethod( method );
-                }
-            }
+            // Debug.Log("Executing module weaver " + ModuleDefinition.Assembly.FullName);
+            // foreach(var type in ModuleDefinition.Types)
+            // {
+            //     foreach ( MethodDefinition method in type.Methods )
+            //     {
+            //         ProcessMethod( method );
+            //     }
+            // }
         }
 
         private void ProcessMethod(MethodDefinition method)

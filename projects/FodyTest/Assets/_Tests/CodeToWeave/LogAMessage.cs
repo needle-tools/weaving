@@ -14,12 +14,10 @@ namespace CodeToWeave
 
         private void OnDisable()
         {
-            Debug.Log(Message);
         }
 
         private void Update()
         {
-            Debug.Log(Message);
         }
 
         [ContextMenu(nameof(Log))]

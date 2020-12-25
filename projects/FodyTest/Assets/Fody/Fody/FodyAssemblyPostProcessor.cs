@@ -104,7 +104,7 @@ public static class FodyAssemblyPostProcessor
     {
         try
         {
-            Debug.Log("Fody processor running");
+            Debug.Log("Fody processor running -------------------------------------------------------");
 
             // Lock assemblies while they may be altered
             EditorApplication.LockReloadAssemblies();
@@ -114,9 +114,9 @@ public static class FodyAssemblyPostProcessor
             var packagePath = Path.GetFullPath(Application.dataPath + "/../Packages");
 
             // This will hold the paths to all the assemblies that will be processed
-            HashSet<string> assemblyPaths = new HashSet<string>();
+            var assemblyPaths = new HashSet<string>();
             // This will hold the search directories for the resolver
-            HashSet<string> assemblySearchDirectories = new HashSet<string>();
+            var assemblySearchDirectories = new HashSet<string>();
 
             // Add all assemblies in the project to be processed, and add their directory to
             // the resolver search directories.
@@ -131,38 +131,27 @@ public static class FodyAssemblyPostProcessor
                     Debug.LogWarning("Assembly has no path: " + assembly.FullName + " -> skip");
                     continue;
                 }
-                // if (!assembly.FullName.Contains("SomeAssemblyToBeFixed"))
-                // {
-                //     Debug.Log("skip for now");
-                //     continue;
-                // }
                 
                 try
                 {
                     var isAsset = Path.GetFullPath(assembly.Location).StartsWith(assetPath);
                     var isPackageAsset = Path.GetFullPath(assembly.Location).StartsWith(packagePath);
+                    var isInProject = assembly.Location.Replace('\\', '/').StartsWith(Application.dataPath.Substring(0, Application.dataPath.Length - 7));
                     // Only process assemblies which are in the project
-                    if( assembly.Location.Replace( '\\', '/' ).StartsWith( Application.dataPath.Substring( 0, Application.dataPath.Length - 7 ) )  
-                        // && !isAsset && !isPackageAsset //but not in the assets folder
-                        )
+                    // if(isInProject)
                     {
-                        Debug.Log($"Add assembly {assembly.FullName} at " + assembly.Location);
+                        // Debug.Log($"Add assembly {assembly.FullName} at " + assembly.Location);
                         assemblyPaths.Add(assembly.Location);
                         // if(isAsset || isPackageAsset)
                     }
-
-                    if (!string.IsNullOrWhiteSpace(assembly.Location))
+                    
+                    // But always add the assembly folder to the search directories
+                    var dir = Path.GetDirectoryName(assembly.Location);
+                    if(!assemblySearchDirectories.Contains(dir))
                     {
-                        // But always add the assembly folder to the search directories
-                        var dir = Path.GetDirectoryName(assembly.Location);
-                        if(!assemblySearchDirectories.Contains(dir))
-                        {
-                            Debug.Log("Add assembly search dir " + dir);
-                            assemblySearchDirectories.Add(dir);
-                        }
+                        // Debug.Log("Add assembly search dir " + dir);
+                        assemblySearchDirectories.Add(dir);
                     }
-                    else
-                        Debug.LogWarning("Assembly " + assembly.FullName + " has an empty path. Skipping");
             
                 }
                 catch (Exception e)
@@ -182,7 +171,12 @@ public static class FodyAssemblyPostProcessor
             var managedDir = Path.GetDirectoryName(EditorApplication.applicationPath) + "/Data/Managed";
             assemblyResolver.AddSearchDirectory(managedDir);
 
-            Debug.Log("We have " + assemblyPaths.Count + " assembly paths now");
+            Debug.Log("We have " + assemblyPaths.Count + " assembly paths now\n" + string.Join("\n", assemblyPaths));
+            Debug.Log("We have " + assemblySearchDirectories.Count + " assembly search dirs now\n" + string.Join("\n", assemblySearchDirectories));
+
+            Debug.Log("Do nothing for now");
+            return;
+            
             ProcessAssembliesIn(assemblyPaths, assemblyResolver, inMemory);
         }
         catch (Exception e)
@@ -445,7 +439,7 @@ public static class FodyAssemblyPostProcessor
             weavers.Add(entry);
         }
 
-        Debug.LogFormat("Fody processor running for weavers {0}", string.Join("; ", weavers.Select(w => w.PrettyName()).ToArray()));
+        Debug.Log($"Fody processor running for weavers {string.Join("; ", weavers.Select(w => w.PrettyName()))}");
 
         return weavers;
     }
@@ -463,7 +457,7 @@ public static class FodyAssemblyPostProcessor
         }
         catch (XmlException exception)
         {
-            throw new Exception(string.Format("Could not read '{0}' because it has invalid xml. Message: '{1}'.", "FodyWeavers.xml", exception.Message));
+            throw new Exception($"Could not read FodyWeavers.xml because it has invalid xml. Message: '{exception.Message}'.");
         }
     }
 
