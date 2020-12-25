@@ -440,8 +440,7 @@ public static class FodyAssemblyPostProcessor
             weavers.Add(entry);
         }
 
-        Debug.Log($"Fody processor running for weavers {string.Join("; ", weavers.Select(w => w.PrettyName()))}");
-
+        Debug.Log($"Fody processor running for weavers \n{string.Join("\n", weavers.Select(w => w.PrettyName()))}");
         return weavers;
     }
 

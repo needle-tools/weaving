@@ -79,11 +79,14 @@ namespace Fody
 		{
 			assemblyPath = assemblyPath.Replace("\\", "/"); 
 			const string k_ScriptAssembliesFolderName = "/ScriptAssemblies/";
-			var scriptCache = assemblyPath.LastIndexOf(k_ScriptAssembliesFolderName, StringComparison.InvariantCulture);
-			if (scriptCache > 0)
-			{
-				return assemblyPath.Substring(scriptCache);
-			}
+			var pathIndex = assemblyPath.LastIndexOf(k_ScriptAssembliesFolderName, StringComparison.InvariantCulture);
+			if (pathIndex > 0)
+				return assemblyPath.Substring(pathIndex);
+
+			const string k_DataPath = "Editor/Data/Managed/";
+			pathIndex = assemblyPath.LastIndexOf(k_DataPath, StringComparison.InvariantCulture);
+			if (pathIndex > 0)
+				return assemblyPath.Substring(pathIndex);
 
 			Debug.LogWarning("Backup path not found for " + assemblyPath);
 			return null;
