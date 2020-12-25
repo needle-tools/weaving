@@ -22,7 +22,8 @@ public static class FodyAssemblyPostProcessor
     
     public static readonly HashSet<string> DefaultAssemblies = new HashSet<string>()
     {
-        "SomeAssemblyToBeFixed.dll"
+        // "SomeAssemblyToBeFixed.dll"
+        "UnityEngine.XRModule.dll"
         // "Assembly-CSharp.dll",
         // "Assembly-CSharp-firstpass.dll"
     };
@@ -116,7 +117,7 @@ public static class FodyAssemblyPostProcessor
             // This will hold the paths to all the assemblies that will be processed
             var assemblyPaths = new HashSet<string>();
             // This will hold the search directories for the resolver
-            var assemblySearchDirectories = new HashSet<string>();
+            HashSet<string> assemblySearchDirectories = new HashSet<string>();
 
             // Add all assemblies in the project to be processed, and add their directory to
             // the resolver search directories.
@@ -174,8 +175,8 @@ public static class FodyAssemblyPostProcessor
             Debug.Log("We have " + assemblyPaths.Count + " assembly paths now\n" + string.Join("\n", assemblyPaths));
             Debug.Log("We have " + assemblySearchDirectories.Count + " assembly search dirs now\n" + string.Join("\n", assemblySearchDirectories));
 
-            Debug.Log("Do nothing for now");
-            return;
+            // Debug.Log("Do nothing for now");
+            // return;
             
             ProcessAssembliesIn(assemblyPaths, assemblyResolver, inMemory);
         }

@@ -7,7 +7,7 @@ using Mono.Cecil;
 using Mono.Cecil.Cil;
 using UnityEngine;
 
-namespace Fody.DebugLogWeaver
+namespace Fody.Weavers.DebugLogWeaver
 {
     // https://www.codersblock.org/blog//2014/06/integrating-monocecil-with-unity.html
     

@@ -1,10 +1,8 @@
 using System.Collections.Generic;
-using System.Linq;
 using Mono.Cecil;
-using Mono.Cecil.Cil;
 using UnityEngine;
 
-namespace Fody.InputDeviceWeaver
+namespace Fody.Weavers.InputDeviceWeaver
 {
 	public class ModuleWeaver : BaseModuleWeaver
 	{
