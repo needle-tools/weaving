@@ -6,13 +6,14 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Xml.Linq;
 using System.Xml;
+using Mono.Cecil.Pdb;
 using Assembly = System.Reflection.Assembly;
 using UnityEditor.Callbacks;
 using UnityEngine.SceneManagement;
 
-[InitializeOnLoad]
 public static class FodyAssemblyPostProcessor
 {
     static HashSet<string> DefaultAssemblies = new HashSet<string>()
@@ -56,8 +57,10 @@ public static class FodyAssemblyPostProcessor
         DoProcessing();
     }
 
-    static FodyAssemblyPostProcessor()
+    [InitializeOnLoadMethod]
+    private static void Init()
     {
+        // File.Move(@"C:\git\weaving\projects\FodyTest\Library\ScriptAssemblies\SomeAssemblyToBeFixed.dll", @"C:\git\weaving\projects\FodyTest\Library\ScriptAssemblies\SomeAssemblyToBeFixed.1dll"); 
         DoProcessing();
     }
 
@@ -65,7 +68,7 @@ public static class FodyAssemblyPostProcessor
     {
         try
         {
-            Debug.Log( "Fody processor running" );
+            Debug.Log("Fody processor running");
 
             // Lock assemblies while they may be altered
             EditorApplication.LockReloadAssemblies();
@@ -79,7 +82,7 @@ public static class FodyAssemblyPostProcessor
 
             // Add all assemblies in the project to be processed, and add their directory to
             // the resolver search directories.
-            foreach( System.Reflection.Assembly assembly in AppDomain.CurrentDomain.GetAssemblies() )
+            foreach(var assembly in AppDomain.CurrentDomain.GetAssemblies())
             {
                 if (assembly.IsDynamic)
                     continue;
@@ -104,10 +107,13 @@ public static class FodyAssemblyPostProcessor
 
                     if (!string.IsNullOrWhiteSpace(assembly.Location))
                     {
-                        var dir = Path.GetDirectoryName(assembly.Location);
-                        Debug.Log("Add assembly search dir " + dir);
                         // But always add the assembly folder to the search directories
-                        assemblySearchDirectories.Add(dir);
+                        var dir = Path.GetDirectoryName(assembly.Location);
+                        if(!assemblySearchDirectories.Contains(dir))
+                        {
+                            Debug.Log("Add assembly search dir " + dir);
+                            assemblySearchDirectories.Add(dir);
+                        }
                     }
                     else
                         Debug.LogWarning("Assembly " + assembly.FullName + " has an empty path. Skipping");
@@ -127,7 +133,8 @@ public static class FodyAssemblyPostProcessor
                 assemblyResolver.AddSearchDirectory( searchDirectory );
             }
             // Add path to the Unity managed dlls
-            assemblyResolver.AddSearchDirectory( Path.GetDirectoryName( EditorApplication.applicationPath ) + "/Data/Managed" );
+            var managedDir = Path.GetDirectoryName(EditorApplication.applicationPath) + "/Data/Managed";
+            assemblyResolver.AddSearchDirectory(managedDir);
 
             Debug.Log("We have " + assemblyPaths.Count + " assembly paths now");
             ProcessAssembliesIn(assemblyPaths, assemblyResolver);
@@ -187,8 +194,8 @@ public static class FodyAssemblyPostProcessor
                 Debug.Log("Found pdb path: " + pdbPath);
                 readerParameters.ReadSymbols = true;
                 readerParameters.SymbolReaderProvider = new Mono.Cecil.Pdb.PdbReaderProvider();
-                // writerParameters.WriteSymbols = true;
-                // writerParameters.SymbolWriterProvider = new Mono.Cecil.Mdb.MdbWriterProvider(); // pdb written out as mdb, as mono can't work with pdbs
+                writerParameters.WriteSymbols = true;
+                writerParameters.SymbolWriterProvider = new PdbWriterProvider(); // pdb written out as mdb, as mono can't work with pdbs
             }
             // else if (File.Exists(mdbPath))
             // {
@@ -206,10 +213,11 @@ public static class FodyAssemblyPostProcessor
                 writerParameters.WriteSymbols = false;
                 writerParameters.SymbolWriterProvider = null;
             }
-
+                
             // Read assembly
             Debug.Log("Read module");
-            var module = ModuleDefinition.ReadModule(assemblyPath, readerParameters);
+            var fs = new FileStream(assemblyPath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite);
+            var module = ModuleDefinition.ReadModule(fs, readerParameters);
             Debug.Log("Prepare weavers");
             PrepareWeaversForModule(weavers, module);
 
@@ -219,10 +227,14 @@ public static class FodyAssemblyPostProcessor
                 Debug.Log( "Processing " + Path.GetFileName( assemblyPath ) );
                 if (ProcessAssembly(assemblyPath, module, weavers))
                 {
-                    Debug.Log("Writing processed assembly to " + assemblyPath);
-                    module.Write(assemblyPath, writerParameters);
-                    // File.Move(assemblyPath, assemblyPath + ".original");
-                    Debug.Log( "Done writing" );
+                    var path = assemblyPath;
+                    Debug.Log("Writing processed assembly to " + path);
+                    // File.Move(path, path + ".original");
+                    // var dir = Path.GetDirectoryName(path);
+                    // var name = Path.GetFileNameWithoutExtension(path);
+                    // path = dir + "/" + name + "1.dll";
+                    module.Write(fs, writerParameters);
+                    Debug.Log("Done writing to " + path);
                 }
             }
             catch (Exception e)
@@ -236,11 +248,11 @@ public static class FodyAssemblyPostProcessor
     {
         if (module.Types.Any(t => t.Name == "ProcessedByFody"))
         {
-            Debug.LogFormat("skipped {0} as it is already processed", assemblyPath);
+            Debug.LogWarning($"Skipping {assemblyPath} as it is already processed");
             return false;
         }
 
-        Debug.Log("Writing to " + assemblyPath);
+        Debug.Log("Process assembly at " + assemblyPath);
 
         foreach (var weaver in weavers)
         {
@@ -330,8 +342,9 @@ public static class FodyAssemblyPostProcessor
                 }
                 weaverConfig.AssemblyPath = weavePath;
 
-                Debug.Log(string.Format("Weaver '{0}'.", weaverConfig.AssemblyPath));
+                Debug.Log($"Load Weaver at '{weaverConfig.AssemblyPath}'.");
                 var assembly = LoadAssembly(weaverConfig.AssemblyPath);
+                Debug.Log("Loaded Weaver " + assembly.Location);
 
                 var weaverType = GetType(assembly, weaverConfig.TypeName);
                 if (weaverType == null)
@@ -401,15 +414,16 @@ public static class FodyAssemblyPostProcessor
         Assembly assembly;
         if (assemblies.TryGetValue(assemblyPath, out assembly))
         {
-            Debug.Log(string.Format("  Loading '{0}' from cache.", assemblyPath));
+            Debug.Log($"Loading '{assemblyPath}' from cache.");
             return assembly;
         }
-        Debug.Log(string.Format("  Loading '{0}' from disk.", assemblyPath));
+        Debug.Log($"Loading '{assemblyPath}' from disk.");
         return assemblies[assemblyPath] = LoadFromFile(assemblyPath);
     }
 
     static Assembly LoadFromFile(string assemblyPath)
     {
+        Debug.Log("Load Assembly: " + assemblyPath);
         var pdbPath = Path.ChangeExtension(assemblyPath, "pdb");
         var rawAssembly = File.ReadAllBytes(assemblyPath);
         if (File.Exists(pdbPath))
