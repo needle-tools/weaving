@@ -120,7 +120,7 @@ namespace ExampleProjectWeaver
         
         private IEnumerable<Instruction> GetInstructions( MethodDefinition method )
         {
-            yield return Instruction.Create( OpCodes.Ldstr, $"123 Added Log Message to {method.Name}({{0}}) at " + DateTime.Now.ToString(CultureInfo.InvariantCulture));
+            yield return Instruction.Create( OpCodes.Ldstr, $"Added Log Message to {method.Name}({{0}}) at " + DateTime.Now.ToString(CultureInfo.InvariantCulture));
             yield return Instruction.Create( OpCodes.Ldstr, "," );
  
             yield return Instruction.Create( OpCodes.Ldc_I4, method.Parameters.Count );

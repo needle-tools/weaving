@@ -1,23 +1,24 @@
 using Mono.Cecil;
-using Mono.Cecil.Cil;
 using System;
 using System.IO;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Xml.Linq;
 using System.Xml;
+using Fody;
 using Mono.Cecil.Pdb;
 using Assembly = System.Reflection.Assembly;
 using UnityEditor.Callbacks;
-using UnityEditor.Compilation;
-using UnityEngine.SceneManagement;
 
+
+[InitializeOnLoad]
 public static class FodyAssemblyPostProcessor
 {
-    static HashSet<string> DefaultAssemblies = new HashSet<string>()
+    public static bool InMemory = false;
+    
+    public static readonly HashSet<string> DefaultAssemblies = new HashSet<string>()
     {
         "SomeAssemblyToBeFixed.dll"
         // "Assembly-CSharp.dll",
@@ -42,35 +43,46 @@ public static class FodyAssemblyPostProcessor
         {
             assemblyPaths.Add(file);
         }
-        ProcessAssembliesIn(assemblyPaths, assemblyResolver);
+        ProcessAssembliesIn(assemblyPaths, assemblyResolver, false);
     }
 
-    [PostProcessScene]
-    public static void PostprocessScene()
+    // [PostProcessScene]
+    // public static void PostprocessScene()
+    // {
+    //     if (!BuildPipeline.isBuildingPlayer)
+    //         return;
+    //
+    //     var scene = SceneManager.GetActiveScene();
+    //     if (!scene.IsValid() || scene.buildIndex != 0)
+    //         return;
+    //
+    //     DoProcessing(true);
+    // }
+
+    static FodyAssemblyPostProcessor()
     {
-        if (!BuildPipeline.isBuildingPlayer)
-            return;
-
-        var scene = SceneManager.GetActiveScene();
-        if (!scene.IsValid() || scene.buildIndex != 0)
-            return;
-
-        DoProcessing();
-    }
-
-    [InitializeOnLoadMethod]
-    private static void Init()
-    {
-        // DoProcessing();
+        Debug.Log("INITIALIZE ON LOAD");
+        if(!InMemory)
+            DoProcessing(false);
         AssemblyReloadEvents.beforeAssemblyReload += OnBeforeReload;
+        AssemblyReloadEvents.afterAssemblyReload += OnAfterReload;
     }
 
     private static void OnBeforeReload()
     {
-        DoProcessing();
+        Debug.Log("BEFORE ASSEMBLY RELOAD");
+        if(!InMemory)
+            DoProcessing(false);
     }
 
-    static void DoProcessing()
+    private static void OnAfterReload()
+    {
+        Debug.Log("AFTER ASSEMBLY RELOAD");
+        if(InMemory)
+            DoProcessing(true);
+    }
+
+    private static void DoProcessing(bool inMemory)
     {
         try
         {
@@ -143,7 +155,7 @@ public static class FodyAssemblyPostProcessor
             assemblyResolver.AddSearchDirectory(managedDir);
 
             Debug.Log("We have " + assemblyPaths.Count + " assembly paths now");
-            ProcessAssembliesIn(assemblyPaths, assemblyResolver);
+            ProcessAssembliesIn(assemblyPaths, assemblyResolver, inMemory);
         }
         catch (Exception e)
         {
@@ -158,7 +170,7 @@ public static class FodyAssemblyPostProcessor
         Debug.Log("Fody processor finished");
     }
 
-    static void ProcessAssembliesIn(HashSet<string> assemblyPaths, IAssemblyResolver assemblyResolver)
+    private static void ProcessAssembliesIn(HashSet<string> assemblyPaths, IAssemblyResolver assemblyResolver, bool inMemory)
     {
         // Create reader parameters with resolver
         var readerParameters = new ReaderParameters();
@@ -191,15 +203,15 @@ public static class FodyAssemblyPostProcessor
             Debug.Log("Path: " + assemblyPath);
             
             // mdbs have the naming convention myDll.dll.mdb whereas pdbs have myDll.pdb
-            String mdbPath = assemblyPath + ".mdb";
-            String pdbPath = assemblyPath.Substring(0, assemblyPath.Length - 3) + "pdb";
+            var mdbPath = assemblyPath + ".mdb";
+            var pdbPath = assemblyPath.Substring(0, assemblyPath.Length - 3) + "pdb";
 
             // Figure out if there's an pdb/mdb to go with it
             if (File.Exists(pdbPath))
             {
                 Debug.Log("Found pdb path: " + pdbPath);
                 readerParameters.ReadSymbols = true;
-                readerParameters.SymbolReaderProvider = new Mono.Cecil.Pdb.PdbReaderProvider();
+                readerParameters.SymbolReaderProvider = new PdbReaderProvider();
                 writerParameters.WriteSymbols = true;
                 writerParameters.SymbolWriterProvider = new PdbWriterProvider(); // pdb written out as mdb, as mono can't work with pdbs
             }
@@ -219,28 +231,34 @@ public static class FodyAssemblyPostProcessor
                 writerParameters.WriteSymbols = false;
                 writerParameters.SymbolWriterProvider = null;
             }
-                
-            // Read assembly
-            Debug.Log("Read module");
-            // TODO: test if/how we can patch in memory
-            var fs = new FileStream(assemblyPath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite);
-            var module = ModuleDefinition.ReadModule(fs, readerParameters);
-            Debug.Log("Prepare weavers");
-            PrepareWeaversForModule(weavers, module);
 
+            Stream stream = null;
+            ModuleDefinition module = null;
             try
             {
+                
+                stream = LoadAssemblyForModule(assemblyPath, inMemory);
+                module = ModuleDefinition.ReadModule(stream, readerParameters);
+                var modified = module.IsModified();
+                stream.Dispose();
+                module.Dispose();
+                DllBackupHelper.GetFromBackupIfAvailable(assemblyPath, modified);
+                
+                // Read assembly
+                stream = LoadAssemblyForModule(assemblyPath, inMemory);
+                Debug.Log("Read module from stream (in memory? " + inMemory + ")");
+                module = ModuleDefinition.ReadModule(stream, readerParameters);
+
+                Debug.Log("Prepare weavers");
+                PrepareWeaversForModule(weavers, module);
+                
                 // Process it if it hasn't already
-                Debug.Log( "Processing " + Path.GetFileName( assemblyPath ) );
+                Debug.Log("Processing " + Path.GetFileName(assemblyPath));
                 if (ProcessAssembly(assemblyPath, module, weavers))
                 {
                     var path = assemblyPath;
                     Debug.Log("Writing processed assembly to " + path);
-                    // File.Move(path, path + ".original");
-                    // var dir = Path.GetDirectoryName(path);
-                    // var name = Path.GetFileNameWithoutExtension(path);
-                    // path = dir + "/" + name + "1.dll";
-                    module.Write(fs, writerParameters);
+                    module.Write(stream, writerParameters);
                     Debug.Log("Done writing to " + path);
                 }
             }
@@ -248,13 +266,35 @@ public static class FodyAssemblyPostProcessor
             {
                 Debug.LogWarning(e);
             }
+            finally
+            {
+                stream?.Dispose();
+                module?.Dispose();
+            }
         }
+    }
+
+    private static Stream LoadAssemblyForModule(string assemblyPath, bool inMemory)
+    {
+        if (!inMemory)
+        {
+            Debug.Log("Read Assembly from file");
+            return new FileStream(assemblyPath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite);
+        }
+        
+        Debug.Log("Read assembly from memory");
+        // TODO: this does not work yet (BadImageException from Cecil ImageReader.ReadImage:63
+        var rawAssembly = File.ReadAllBytes(assemblyPath);
+        // to make it expandable https://stackoverflow.com/a/52052656
+        var ms = new MemoryStream(0);
+        ms.Write(rawAssembly, 0, rawAssembly.Length);
+        return ms;
+        // return new MemoryStream(rawAssembly, true);
     }
 
     private static bool ProcessAssembly(string assemblyPath, ModuleDefinition module, IEnumerable<WeaverEntry> weavers)
     {
-        var processedMarkerType = module.Types.FirstOrDefault(t => t.FullName == "ProcessedByFody");
-        if (processedMarkerType != null) 
+        if (module.IsModified()) 
         {
             Debug.LogWarning($"Skipping {assemblyPath} as it is already processed");
             return false;
