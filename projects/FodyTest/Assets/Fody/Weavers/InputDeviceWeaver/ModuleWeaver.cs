@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using _Tests.Weaver_InputDevice;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using UnityEngine;
@@ -26,9 +27,6 @@ namespace Fody.Weavers.InputDeviceWeaver
 		{
 			yield break;
 		}
-
-
-
 
 		private void ProcessMethod(MethodDefinition method)
 		{
@@ -67,26 +65,14 @@ namespace Fody.Weavers.InputDeviceWeaver
 			list.Add(Instruction.Create(OpCodes.Ret));
 			return list;
 		}
-
-		private static void InjectedDeviceList(List<InputDevice> list)
-		{
-			var dev = new InputDevice();
-			list.Add(dev);
-			for (var i = 0; i < 10; i++)
-			{
-				if(Random.value > .8f)
-					list.Add(dev);
-			}
-		}
-		
 		
 		private MethodInfo replacementMethod;
 		
 		public ModuleWeaver()
 		{
-			replacementMethod = GetType()
-				.GetMethods(BindingFlags.Static | BindingFlags.NonPublic)
-				.Where( x => x.Name == nameof(InjectedDeviceList))
+			replacementMethod = typeof(FakeInputDeviceAPI)
+				.GetMethods((BindingFlags)~0)
+				.Where( x => x.Name == "FakeDeviceList")
 				.Single( x =>
 				{
 					var parameters = x.GetParameters();

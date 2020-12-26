@@ -356,7 +356,8 @@ namespace Fody
             }
 
             //add a project weaver
-            var projectWeavers = typeof(FodyAssemblyProcessor).Assembly.GetTypes().Where(t => t.Name.EndsWith("ModuleWeaver"));
+
+            var projectWeavers = UnityEditor.TypeCache.GetTypesDerivedFrom<BaseModuleWeaver>();
             foreach(var weaver in projectWeavers)
             {
                 Debug.LogFormat("Added project weaver {0}", weaver);
@@ -366,7 +367,7 @@ namespace Fody
                 weavers.Add(entry);
             }
 
-            Debug.Log($"Fody processor running for weavers \n{string.Join("\n", weavers.Select(w => w.PrettyName()))}");
+            Debug.Log($"Fody processor running for {weavers.Count} weavers \n{string.Join("\n", weavers.Select(w => w.PrettyName()))}");
             return weavers;
         }
 

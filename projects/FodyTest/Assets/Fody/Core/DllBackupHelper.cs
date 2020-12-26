@@ -35,7 +35,7 @@ namespace Fody
 					{
 						if (File.Exists(src))
 						{
-							Debug.Log("Restore from backup " + target);
+							Debug.Log("Restore from backup " + target + "\nbackup: " + src);
 							File.Copy(src, target, true);
 						}
 					}
@@ -95,8 +95,8 @@ namespace Fody
 			var fileName = Path.GetFileName(assemblyPath);
 			return "backup/" + fileName;
 
-			Debug.LogWarning("Backup path not found for " + assemblyPath);
-			return null;
+			// Debug.LogWarning("Backup path not found for " + assemblyPath);
+			// return null;
 		}
 
 		private static IEnumerable<string> EnumerateSymbols(string assemblyPath)

@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace Fody
 {
-	public static class Utils
+	public static class MethodDefinitionExtensions
 	{
 		public static void LogIL(this MethodDefinition method, string prefix)
 		{
