@@ -12,8 +12,6 @@ namespace _Tests.Weaver_InputDevice
 	{
 		private static void FakeDeviceList(List<InputDevice> list)
 		{
-#if UNITY_WEBGL
-			list.Clear();
 			if(!Application.isPlaying) return;
 			if (Time.time < 2) return;
 			Debug.Log("Add devices");
@@ -24,7 +22,6 @@ namespace _Tests.Weaver_InputDevice
 				if (Random.value > .8f)
 					list.Add(dev);
 			}
-#endif
 		}
 	}
 }

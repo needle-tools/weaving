@@ -41,26 +41,26 @@ namespace Fody
             // CompilationPipeline.assemblyCompilationFinished += OnAfterAssemblyCompilationFinished;
         }
         
-        [PostProcessBuild(1)]
-        public static void OnPostprocessBuild(BuildTarget target, string pathToBuiltProject)
-        {
-            var exeDir = Path.GetDirectoryName(pathToBuiltProject) ?? "";
-            var dataFolder = Path.Combine(exeDir, Path.GetFileNameWithoutExtension(pathToBuiltProject) + "_Data");
-            if (!Directory.Exists(dataFolder))
-                return;
-            var managed = Path.Combine(dataFolder, "Managed");
-            if (!Directory.Exists(managed))
-                return;
-            //Debug.LogFormat("Fody post-weaving {0}", pathToBuiltProject);
-            var assemblyResolver = new DefaultAssemblyResolver();
-            assemblyResolver.AddSearchDirectory(managed);
-            HashSet<string> assemblyPaths = new HashSet<string>();
-            foreach(var file in Directory.GetFiles(managed).Where(d => Path.GetExtension(d) == ".dll"))
-            {
-                assemblyPaths.Add(file);
-            }
-            FodyAssemblyProcessor.ProcessAssemblies(assemblyPaths, assemblyResolver, false);
-        }
+        // [PostProcessBuild(1)]
+        // public static void OnPostprocessBuild(BuildTarget target, string pathToBuiltProject)
+        // {
+        //     var exeDir = Path.GetDirectoryName(pathToBuiltProject) ?? "";
+        //     var dataFolder = Path.Combine(exeDir, Path.GetFileNameWithoutExtension(pathToBuiltProject) + "_Data");
+        //     if (!Directory.Exists(dataFolder))
+        //         return;
+        //     var managed = Path.Combine(dataFolder, "Managed");
+        //     if (!Directory.Exists(managed))
+        //         return;
+        //     //Debug.LogFormat("Fody post-weaving {0}", pathToBuiltProject);
+        //     var assemblyResolver = new DefaultAssemblyResolver();
+        //     assemblyResolver.AddSearchDirectory(managed);
+        //     HashSet<string> assemblyPaths = new HashSet<string>();
+        //     foreach(var file in Directory.GetFiles(managed).Where(d => Path.GetExtension(d) == ".dll"))
+        //     {
+        //         assemblyPaths.Add(file);
+        //     }
+        //     FodyAssemblyProcessor.ProcessAssemblies(assemblyPaths, assemblyResolver, false);
+        // }
 
         // [PostProcessScene]
         // public static void PostprocessScene()
