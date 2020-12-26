@@ -1,0 +1,16 @@
+{
+    "name": "Weavers",
+    "references": [
+        "GUID:ca85a31494ffe104d832c4a1c488d5b7",
+        "GUID:c4dd37100aa5b7b44915779222b690ec"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
