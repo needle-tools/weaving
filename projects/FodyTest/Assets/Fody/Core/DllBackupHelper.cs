@@ -25,21 +25,25 @@ namespace Fody
 				var res  = EnsureBackupAndGetPathInBackupStoreIfExists(symbolPath, isModified, out var backupSymbolPath);
 				if (res) copyList.Add((backupSymbolPath, symbolPath));
 			}
-			// restore files
-			try
+
+			if (isModified)
 			{
-				foreach(var (src, target) in copyList)
+				// restore files
+				try
 				{
-					if (File.Exists(src))
+					foreach(var (src, target) in copyList)
 					{
-						Debug.Log("Restore from backup " + target);
-						File.Copy(src, target, true);
+						if (File.Exists(src))
+						{
+							Debug.Log("Restore from backup " + target);
+							File.Copy(src, target, true);
+						}
 					}
 				}
-			}
-			catch (Exception e)
-			{
-				Debug.LogException(e);
+				catch (Exception e)
+				{
+					Debug.LogException(e);
+				}
 			}
 		}
 		

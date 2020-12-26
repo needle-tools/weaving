@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using UnityEngine;
@@ -26,23 +27,49 @@ namespace Fody.Weavers.InputDeviceWeaver
 			yield break;
 		}
 
+
+
+
 		private void ProcessMethod(MethodDefinition method)
 		{
 			if (method.Name != "GetDevices") return;
 			Debug.Log("Process " + method.Name);
 			ILProcessor processor = method.Body.GetILProcessor();
-			Instruction current = method.Body.Instructions.First();
-			Debug.Log("Instructions? " + method.Body.Instructions.Count);
-			foreach (var instru in method.Body.Instructions)
+			method.LogIL("BEFORE PATCHING");
+			for (var index = 0; index < method.Body.Instructions.Count; index++)
 			{
-				Debug.Log(instru);
+				var inst = method.Body.Instructions[index];
+				if (inst.ToString()
+					.Contains(
+						"call System.Void UnityEngine.XR.InputDevices::GetDevices_Internal(System.Collections.Generic.List`1<UnityEngine.XR.InputDevice>)"))
+				{
+					var rep = Instruction.Create(OpCodes.Call, ModuleDefinition.ImportReference(replacementMethod));
+					processor.Replace(index, rep);
+				}
 			}
+			method.LogIL("AFTER PATCHING");
 		}
 
 		private void InjectedDeviceList(List<InputDevice> list)
 		{
 			var dev = new InputDevice();
 			list.Add(dev);
+		}
+		
+		
+		private MethodInfo replacementMethod;
+		
+		public ModuleWeaver()
+		{
+			replacementMethod = GetType()
+				.GetMethods(BindingFlags.Instance | BindingFlags.NonPublic)
+				.Where( x => x.Name == nameof(InjectedDeviceList))
+				.Single( x =>
+				{
+					var parameters = x.GetParameters();
+					return parameters.Length == 1 &&
+					       parameters[0].ParameterType == typeof( List<InputDevice> );
+				} );
 		}
 	}
 }
