@@ -26,10 +26,9 @@ namespace Fody
         {
             var res = new DefaultAssemblyResolver();
             res.AddSearchDirectory(@"D:\UnityHub\2019.4.11f1\Editor\Data\Managed\UnityEngine");
-            var assemblies = new HashSet<string>()
-            {
-                @"C:\Users\marcel\AppData\Roaming\needle\weaver\manual\UnityEngine.XRModule.dll",
-            };
+            var dlls = Directory.GetFiles(@"C:\Users\marcel\AppData\Roaming\needle\weaver\manual", "*.dll");
+            var assemblies = new HashSet<string>();
+            foreach (var dll in dlls) assemblies.Add(dll);
             FodyAssemblyProcessor.ProcessAssemblies(assemblies, res, false);
             
             // Debug.Log("INITIALIZE ON LOAD");

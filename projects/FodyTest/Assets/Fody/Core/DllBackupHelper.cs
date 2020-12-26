@@ -92,6 +92,9 @@ namespace Fody
 			if (pathIndex > 0)
 				return assemblyPath.Substring(pathIndex);
 
+			var fileName = Path.GetFileName(assemblyPath);
+			return "backup/" + fileName;
+
 			Debug.LogWarning("Backup path not found for " + assemblyPath);
 			return null;
 		}

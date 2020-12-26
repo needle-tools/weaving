@@ -29,14 +29,15 @@ namespace Fody.Weavers.DebugLogWeaver
         }
         public override void Execute()
         {
-            // Debug.Log("Executing module weaver " + ModuleDefinition.Assembly.FullName);
-            // foreach(var type in ModuleDefinition.Types)
-            // {
-            //     foreach ( MethodDefinition method in type.Methods )
-            //     {
-            //         ProcessMethod( method );
-            //     }
-            // }
+            Debug.Log("Executing module weaver " + ModuleDefinition.Assembly.FullName);
+            foreach(var type in ModuleDefinition.Types)
+            {
+                foreach ( MethodDefinition method in type.Methods )
+                {
+                    if(method.FullName.Contains("CodeToWeave"))
+                        ProcessMethod( method );
+                }
+            }
         }
 
         private void ProcessMethod(MethodDefinition method)
@@ -44,6 +45,7 @@ namespace Fody.Weavers.DebugLogWeaver
             Debug.Log("Process " + method.Name);
             ILProcessor processor = method.Body.GetILProcessor();
             Instruction current = method.Body.Instructions.First();
+            method.LogIL("BEFORE PROCESSING");
             
             //Create Nop instruction to use as a starting point
             //for the rest of our instructions
@@ -58,13 +60,38 @@ namespace Fody.Weavers.DebugLogWeaver
                  processor.InsertAfter( current, instruction );
                  current = instruction;
              }
+             
+             method.LogIL("AFTER PROCESSING");
         }
         
+        private IEnumerable<Instruction> GetInstructions( MethodDefinition method )
+        {
+            yield return Instruction.Create( OpCodes.Ldstr, $"{method.Name}({{0}}) has been patched at " + DateTime.Now.ToString(CultureInfo.InvariantCulture));
+            yield return Instruction.Create( OpCodes.Ldstr, "," );
+ 
+            yield return Instruction.Create( OpCodes.Ldc_I4, method.Parameters.Count );
+            yield return Instruction.Create( OpCodes.Newarr, ModuleDefinition.ImportReference( typeof( object ) ) );
+ 
+            for ( int i = 0; i < method.Parameters.Count; i++ )
+            { 
+                yield return Instruction.Create( OpCodes.Dup );
+                yield return Instruction.Create( OpCodes.Ldc_I4, i );
+                yield return Instruction.Create( OpCodes.Ldarg, method.Parameters[i] );
+                if ( method.Parameters[i].ParameterType.IsValueType )
+                    yield return Instruction.Create( OpCodes.Box, method.Parameters[i].ParameterType );
+                yield return Instruction.Create( OpCodes.Stelem_Ref );
+            }
+ 
+            yield return Instruction.Create( OpCodes.Call, ModuleDefinition.ImportReference( _stringJoinMethod ) );
+            yield return Instruction.Create( OpCodes.Call, ModuleDefinition.ImportReference( _stringFormatMethod ) );
+            yield return Instruction.Create( OpCodes.Call, ModuleDefinition.ImportReference( _unityDebugLogMethod ) );
+        }
+
         private static readonly MethodInfo _stringJoinMethod;
         private static readonly MethodInfo _stringFormatMethod;
         private static readonly MethodInfo _debugWriteLineMethod;
         private static readonly MethodInfo _unityDebugLogMethod;
-        
+
         static ModuleWeaver()
         {
             //Find string.Join(string, object[]) method
@@ -113,29 +140,6 @@ namespace Fody.Weavers.DebugLogWeaver
                 } );
         }
         
-        private IEnumerable<Instruction> GetInstructions( MethodDefinition method )
-        {
-            yield return Instruction.Create( OpCodes.Ldstr, $"{method.Name}({{0}}) has been patched at " + DateTime.Now.ToString(CultureInfo.InvariantCulture));
-            yield return Instruction.Create( OpCodes.Ldstr, "," );
- 
-            yield return Instruction.Create( OpCodes.Ldc_I4, method.Parameters.Count );
-            yield return Instruction.Create( OpCodes.Newarr, ModuleDefinition.ImportReference( typeof( object ) ) );
- 
-            for ( int i = 0; i < method.Parameters.Count; i++ )
-            { 
-                yield return Instruction.Create( OpCodes.Dup );
-                yield return Instruction.Create( OpCodes.Ldc_I4, i );
-                yield return Instruction.Create( OpCodes.Ldarg, method.Parameters[i] );
-                if ( method.Parameters[i].ParameterType.IsValueType )
-                    yield return Instruction.Create( OpCodes.Box, method.Parameters[i].ParameterType );
-                yield return Instruction.Create( OpCodes.Stelem_Ref );
-            }
- 
-            yield return Instruction.Create( OpCodes.Call, ModuleDefinition.ImportReference( _stringJoinMethod ) );
-            yield return Instruction.Create( OpCodes.Call, ModuleDefinition.ImportReference( _stringFormatMethod ) );
-            yield return Instruction.Create( OpCodes.Call, ModuleDefinition.ImportReference( _unityDebugLogMethod ) );
-        }
-
 
     }
 }
