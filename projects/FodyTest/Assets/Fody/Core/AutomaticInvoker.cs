@@ -24,26 +24,30 @@ namespace Fody
         };
 
 
+        private static string EditorInstallationPath => Path.GetDirectoryName(EditorApplication.applicationPath);
+        private static string WebGLAssembliesPath => EditorInstallationPath + "/Data/PlaybackEngines/WebGLSupport/Managed";
 
-        private static string EngineAssemblyPath => Path.GetDirectoryName(CompilationPipeline.GetPrecompiledAssemblyPaths(CompilationPipeline.PrecompiledAssemblySources.UnityEngine).First());
-        private static string TemporaryAssemblyPath => Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "/needle/weaver/manual";
+        private static string EngineAssembliesPath => EditorInstallationPath + "/Data/Managed";
+        private static string ManualPatchingAssembliesPath => Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "/needle/weaver/manual";
             
         [MenuItem("Weaving/Open DLL Folders")]
         static void OpenFolders()
         {
-            EditorUtility.RevealInFinder(EngineAssemblyPath);
-            EditorUtility.RevealInFinder(TemporaryAssemblyPath);
+            EditorUtility.RevealInFinder(EngineAssembliesPath);
+            EditorUtility.RevealInFinder(ManualPatchingAssembliesPath);
         }
         
         static AutomaticInvoker()
         {
             var res = new DefaultAssemblyResolver();
-            res.AddSearchDirectory(EngineAssemblyPath);
-            if (!Directory.Exists(TemporaryAssemblyPath))
-                Directory.CreateDirectory(TemporaryAssemblyPath);
-            var dlls = Directory.GetFiles(TemporaryAssemblyPath, "*.dll");
+            res.AddSearchDirectory(WebGLAssembliesPath);
+            
+            if (!Directory.Exists(ManualPatchingAssembliesPath))
+                Directory.CreateDirectory(ManualPatchingAssembliesPath);
+            var dlls = Directory.GetFiles(WebGLAssembliesPath, "UnityEngine.XRModule.dll", SearchOption.AllDirectories);
             var assemblies = new HashSet<string>();
             foreach (var dll in dlls) assemblies.Add(dll);
+            
             FodyAssemblyProcessor.ProcessAssemblies(assemblies, res, false);
             
             // Debug.Log("INITIALIZE ON LOAD");
