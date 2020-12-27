@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   enabledPatchIds:
-  - needle.EditorPatching.DeepLinking
   - InputDevicesPatch_needle.EditorPatching.ManagedPatchIndependent
   disabledPatchIds:
   - AddFoldoutsToCameraInspector_needle.EditorPatching.ManagedPatchIndependent
+  - needle.EditorPatching.DeepLinking
