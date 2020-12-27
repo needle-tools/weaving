@@ -1,0 +1,19 @@
+{
+  "name": "com.needle.weaver",
+  "displayName": "needle weaver",
+  "version": "0.0.1-preview",
+  "unity": "2019.4",
+  "description": "",
+  "keywords": [
+    "xreditorsubsystem"
+  ],
+  "author": {
+    "name": "Needle",
+    "email": "hi@needle.tools",
+    "url": "https://needle.tools"
+  },
+  "dependencies": {
+  },
+  "samples": [
+  ]
+}
