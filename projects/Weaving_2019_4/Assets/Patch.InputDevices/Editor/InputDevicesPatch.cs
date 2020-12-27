@@ -3,27 +3,23 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Reflection.Emit;
 using _Tests.Weaver_InputDevice;
 using HarmonyLib;
 using Mono.Cecil;
-using Mono.Cecil.Cil;
 using Mono.Reflection;
-using needle.Weaver;
+using needle.EditorPatching;
 using UnityEditor;
-using UnityEditor.Profiling;
+using UnityEditor.Build;
+using UnityEditor.Build.Reporting;
 using UnityEngine;
 using UnityEngine.XR;
 using Instruction = Mono.Reflection.Instruction;
-using MethodAttributes = Mono.Cecil.MethodAttributes;
-using MethodBody = Mono.Cecil.Cil.MethodBody;
 using OpCode = Mono.Cecil.Cil.OpCode;
-using OpCodes = Mono.Cecil.Cil.OpCodes;
 
 namespace Editor
 {
 	[HarmonyPatch(typeof(InputDevices))]
-	public class InputDevicesPatch
+	public class InputDevicesPatch : IPreprocessBuildWithReport
 	{
 		[HarmonyPrefix]
 		[HarmonyPatch("GetDevices")]
@@ -31,6 +27,13 @@ namespace Editor
 		{
 			FakeInputDeviceAPI.FakeDeviceList(inputDevices);
 			return false;
+		}
+
+		public int callbackOrder => 1000;
+		public void OnPreprocessBuild(BuildReport report)
+		{
+			PatchToIL.PrintIL();
+			Debug.LogError("error to stop build");
 		}
 	}
 
@@ -45,15 +48,17 @@ namespace Editor
 			var md = typeof(InputDevices).GetMethod("GetDevices", (BindingFlags) ~0);
 			var inst2 = md.GetInstructions();
 			foreach(var instruction in inst2) Debug.Log(instruction);
-			
-			
-			var patchedMethods = Harmony.GetAllPatchedMethods();
+
+
+			var patchedMethods = Harmony.GetAllPatchedMethods().ToArray();
+			Debug.Log("Patched methods: " + patchedMethods.Length);
 			foreach (MethodBase method in patchedMethods)
 			{
 				if (method == null) continue;
 
 				var info = Harmony.GetPatchInfo(method);
-				foreach (var pf in info.Prefixes)
+				
+				foreach (var pf in info.EnumeratePatches())
 				{
 					var pm = pf.PatchMethod;
 					Debug.Log("PATCHED");
