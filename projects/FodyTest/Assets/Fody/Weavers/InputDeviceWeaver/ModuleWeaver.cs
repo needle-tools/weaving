@@ -46,11 +46,11 @@ namespace Fody.Weavers.InputDeviceWeaver
 
 		private void ProcessMethod(MethodDefinition method)
 		{
-			// if (method.Name == "GetDevices")
-			// {
-			// 	FixGetDevices(method);
-			// }
-			// else 
+			if (method.Name == "GetDevices")
+			{
+				FixGetDevices(method);
+			}
+			else 
 			if (!method.HasBody)
 			{
 				method.IsManaged = true;
