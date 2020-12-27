@@ -48,7 +48,8 @@ namespace Fody.Weavers.InputDeviceWeaver
 				FixGetDevices(method);
 			}
 			else 
-			if (!method.HasBody)
+			if 
+				(!method.HasBody)
 			{
 				method.LogIL("BEFORE PATCHING " + method.Name);
 				method.IsManaged = true;

@@ -24,31 +24,8 @@ namespace needle.Weaver
 		
 		public static Instruction ToCecilInstruction(this Mono.Reflection.Instruction i)
 		{
-			/*
-				source
-				internal byte op1;
-			    internal byte op2; -> Value => this.size == (byte) 1 ? (short) this.op2 : (short) ((int) this.op1 << 8 | (int) this.op2);
-			    private byte push;
-			    private byte pop;
-			    private byte size;
-			    private byte type; -> OpCodeType
-			    private byte args; -> OperandType
-			    private byte flow; -> FlowControl
-			 
-				target:
-				private readonly byte op1;
-			    private readonly byte op2; -> Value => this.op1 != byte.MaxValue ? (short) ((int) this.op1 << 8 | (int) this.op2) : (short) this.op2;
-			    private readonly byte code;
-			    private readonly byte flow_control;
-			    private readonly byte opcode_type;
-			    private readonly byte operand_type;
-			    private readonly byte stack_behavior_pop;
-			    private readonly byte stack_behavior_push;
-			 */
-
 			// unpack and map
 			var op = i.OpCode;
-			// var ops = BitConverter.GetBytes(op.Value);
 			var op1 = (byte) op1FieldInfo.Value.GetValue(i.OpCode);
 			var op2 = (byte) op2FieldInfo.Value.GetValue(i.OpCode);
 			var flow = (byte) op.FlowControl.ToCecilFlowControl();
@@ -59,6 +36,7 @@ namespace needle.Weaver
 
 			var operand = i.ToCecilOperand();
 
+			// pack
 			var bytes = new[]
 			{
 				op1, // op1
@@ -70,7 +48,6 @@ namespace needle.Weaver
 				pop, // pop
 				push, // push
 			};
-			// pack
 			var i1 = BitConverter.ToInt32(bytes, 0);
 			var i2 = BitConverter.ToInt32(bytes, 4);
 
@@ -81,9 +58,34 @@ namespace needle.Weaver
 			instruction.Offset = i.Offset;
 
 			// Debug.Log(i.OpCode.Name + " = " + opcode.Name + "\n" + i.OpCode.OpCodeType + " = " + opcode.OpCodeType);
-
 			return instruction;
 		}
+		/*
+			these are the target data layouts
+			although unfortunately bytes can not be mapped directly
+			so we need to jump through some hoops. see below
+			
+			source
+			internal byte op1;
+		    internal byte op2; -> Value => this.size == (byte) 1 ? (short) this.op2 : (short) ((int) this.op1 << 8 | (int) this.op2);
+		    private byte push;
+		    private byte pop;
+		    private byte size;
+		    private byte type; -> OpCodeType
+		    private byte args; -> OperandType
+		    private byte flow; -> FlowControl
+		 
+			target:
+			private readonly byte op1;
+		    private readonly byte op2; -> Value => this.op1 != byte.MaxValue ? (short) ((int) this.op1 << 8 | (int) this.op2) : (short) this.op2;
+		    private readonly byte code;
+		    private readonly byte flow_control;
+		    private readonly byte opcode_type;
+		    private readonly byte operand_type;
+		    private readonly byte stack_behavior_pop;
+		    private readonly byte stack_behavior_push;
+		 */
+
 
 		public static Code ToCecilCode(byte op1, byte op2)
 		{
@@ -150,7 +152,9 @@ namespace needle.Weaver
 		{
 			switch (b)
 			{
+#pragma warning disable 618
 				case System.Reflection.Emit.OpCodeType.Annotation:
+#pragma warning restore 618
 					return OpCodeType.Annotation;
 				case System.Reflection.Emit.OpCodeType.Macro:
 					return OpCodeType.Macro;
@@ -230,7 +234,9 @@ namespace needle.Weaver
 					return FlowControl.Meta;
 				case System.Reflection.Emit.FlowControl.Next:
 					return FlowControl.Next;
+#pragma warning disable 618
 				case System.Reflection.Emit.FlowControl.Phi:
+#pragma warning restore 618
 					return FlowControl.Phi;
 				case System.Reflection.Emit.FlowControl.Return:
 					return FlowControl.Return;

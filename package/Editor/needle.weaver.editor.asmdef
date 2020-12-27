@@ -1,6 +1,8 @@
 {
     "name": "needle.weaver.editor",
-    "references": [],
+    "references": [
+        "GUID:336404f647c61ce4db3b999a77d5db23"
+    ],
     "includePlatforms": [
         "Editor"
     ],
@@ -8,7 +10,7 @@
     "allowUnsafeCode": false,
     "overrideReferences": false,
     "precompiledReferences": [],
-    "autoReferenced": true,
+    "autoReferenced": false,
     "defineConstraints": [],
     "versionDefines": [],
     "noEngineReferences": false
