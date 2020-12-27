@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -21,12 +22,26 @@ namespace Fody
             // "Assembly-CSharp.dll",
             // "Assembly-CSharp-firstpass.dll"
         };
+
+
+
+        private static string EngineAssemblyPath => Path.GetDirectoryName(CompilationPipeline.GetPrecompiledAssemblyPaths(CompilationPipeline.PrecompiledAssemblySources.UnityEngine).First());
+        private static string TemporaryAssemblyPath => Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "/needle/weaver/manual";
+            
+        [MenuItem("Weaving/Open DLL Folders")]
+        static void OpenFolders()
+        {
+            EditorUtility.RevealInFinder(EngineAssemblyPath);
+            EditorUtility.RevealInFinder(TemporaryAssemblyPath);
+        }
         
         static AutomaticInvoker()
         {
             var res = new DefaultAssemblyResolver();
-            res.AddSearchDirectory(@"D:\UnityHub\2019.4.11f1\Editor\Data\Managed\UnityEngine");
-            var dlls = Directory.GetFiles(@"C:\Users\marcel\AppData\Roaming\needle\weaver\manual", "*.dll");
+            res.AddSearchDirectory(EngineAssemblyPath);
+            if (!Directory.Exists(TemporaryAssemblyPath))
+                Directory.CreateDirectory(TemporaryAssemblyPath);
+            var dlls = Directory.GetFiles(TemporaryAssemblyPath, "*.dll");
             var assemblies = new HashSet<string>();
             foreach (var dll in dlls) assemblies.Add(dll);
             FodyAssemblyProcessor.ProcessAssemblies(assemblies, res, false);
