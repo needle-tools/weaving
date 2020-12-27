@@ -44,7 +44,7 @@ namespace Editor
 
 			var md = typeof(InputDevices).GetMethod("GetDevices", (BindingFlags) ~0);
 			var inst2 = md.GetInstructions();
-			Debug.Log(string.Join("\n", inst2));
+			foreach(var instruction in inst2) Debug.Log(instruction);
 			
 			
 			var patchedMethods = Harmony.GetAllPatchedMethods();
@@ -58,7 +58,7 @@ namespace Editor
 					var pm = pf.PatchMethod;
 					Debug.Log("PATCHED");
 					var inst = pm.GetInstructions();
-					Debug.Log(string.Join("\n", inst));
+					foreach(Instruction instruction in inst) Debug.Log(instruction);
 				}
 				
 				// https://github.com/jbevain/mono.reflection
