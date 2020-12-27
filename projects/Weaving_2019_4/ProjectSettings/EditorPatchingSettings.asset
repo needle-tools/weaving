@@ -14,4 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   enabledPatchIds:
   - needle.EditorPatching.DeepLinking
-  disabledPatchIds: []
+  - InputDevicesPatch_needle.EditorPatching.ManagedPatchIndependent
+  disabledPatchIds:
+  - AddFoldoutsToCameraInspector_needle.EditorPatching.ManagedPatchIndependent

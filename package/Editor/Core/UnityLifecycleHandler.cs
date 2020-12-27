@@ -11,7 +11,7 @@ using UnityEngine;
 namespace needle.Weaver
 {
 	[InitializeOnLoad]
-	public static class AutomaticInvoker
+	public static class UnityLifecycleHandler
 	{
         // https://forum.unity.com/threads/solved-burst-and-mono-cecil.781148/#post-5201255
         public static bool InMemory = false;
@@ -24,7 +24,7 @@ namespace needle.Weaver
         };
 
 
-        static AutomaticInvoker()
+        static UnityLifecycleHandler()
         {
             
             

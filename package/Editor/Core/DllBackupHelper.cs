@@ -20,7 +20,7 @@ namespace needle.Weaver
 			// collect all files to restore
 			if (!EnsureBackupAndGetPathInBackupStoreIfExists(assemblyPath, isModified, out var backupPath)) return;
 			var copyList = new List<(string source, string target)> {(backupPath, assemblyPath)};
-			foreach (var symbolPath in EnumerateSymbols(assemblyPath))
+			foreach (var symbolPath in EnumerateSymbolsPathsForDll(assemblyPath))
 			{
 				var res  = EnsureBackupAndGetPathInBackupStoreIfExists(symbolPath, isModified, out var backupSymbolPath);
 				if (res) copyList.Add((backupSymbolPath, symbolPath));
@@ -56,11 +56,10 @@ namespace needle.Weaver
 			backupStoreFullPath = null;
 			try
 			{
-				var backupPath = GetBackupRelativeAssemblyPath(assemblyPath);
-				if (string.IsNullOrEmpty(backupPath)) return false;
-				var local = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-				var sub = "/needle/weaver/backup/ " + Application.unityVersion;
-				var full = local + sub + "/" + backupPath;
+				var relBackupPath = GetBackupRelativeAssemblyPath(assemblyPath);
+				if (string.IsNullOrEmpty(relBackupPath)) return false;
+				var sub = Constants.AssembliesBackupPath + "/" + Application.unityVersion;
+				var full = sub + "/" + relBackupPath;
 				var dir = Path.GetDirectoryName(full);
 				if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir)) Directory.CreateDirectory(dir);
 				if (!isModified && !File.Exists(full)) 
@@ -79,7 +78,7 @@ namespace needle.Weaver
 			return false;
 		}
 
-		private static string GetBackupRelativeAssemblyPath(string assemblyPath)
+		public static string GetBackupRelativeAssemblyPath(string assemblyPath)
 		{
 			assemblyPath = assemblyPath.Replace("\\", "/"); 
 			const string k_ScriptAssembliesFolderName = "/ScriptAssemblies/";
@@ -99,7 +98,7 @@ namespace needle.Weaver
 			// return null;
 		}
 
-		private static IEnumerable<string> EnumerateSymbols(string assemblyPath)
+		public static IEnumerable<string> EnumerateSymbolsPathsForDll(string assemblyPath)
 		{
 			var symbol = Path.ChangeExtension(assemblyPath, ".pdb");
 			if(File.Exists(symbol))

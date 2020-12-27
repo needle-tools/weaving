@@ -10,7 +10,7 @@ namespace _Tests.Weaver_InputDevice
 	// https://docs.unity3d.com/Manual/ManagedCodeStripping.html
 	public static class FakeInputDeviceAPI
 	{
-		private static void FakeDeviceList(List<InputDevice> list)
+		public static void FakeDeviceList(List<InputDevice> list)
 		{
 			Debug.Log("Add devices");
 			var dev = new InputDevice();
