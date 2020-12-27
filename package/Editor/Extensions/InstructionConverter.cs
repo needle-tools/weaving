@@ -1,29 +1,29 @@
 using System;
-using System.ComponentModel;
+using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Mono.Cecil.Cil;
 using UnityEngine;
 
-namespace Fody.Weavers.InputDeviceWeaver
+namespace needle.Weaver
 {
-	public static class InstructionExtensions
+	public static class InstructionConverter
 	{
-		
-		
-		
-		// unfortunately this does not work because values are differently packed / different enums
+		public static IList<Instruction> ToCecilInstruction(this IList<Mono.Reflection.Instruction> instructions, bool debug = true)
+		{
+			var list = new List<Instruction>(instructions.Count);
+			foreach (var inst in instructions)
+			{
+				var conv = inst.ToCecilInstruction();
+				if(debug && conv.ToString() != inst.ToString()) Debug.LogWarning("Potential Mismatch:\n" + inst + "\n" + conv);
+				list.Add(conv);
+			}
+			return list;
+		}
 		
 		public static Instruction ToCecilInstruction(this Mono.Reflection.Instruction i)
 		{
-			// for (var index = 0; index < cecilOpCodeNamesArray.Value?.Length; index++)
-			// {
-			// 	var _name = cecilOpCodeNamesArray.Value[index];
-			// 	Debug.Log(_name);
-			// }
-
-			// var b1 = GetBytes(i.OpCode, OpCodeFieldNamesInOrder, 0, 8);
-			
 			/*
 				source
 				internal byte op1;
@@ -49,44 +49,39 @@ namespace Fody.Weavers.InputDeviceWeaver
 			// unpack and map
 			var op = i.OpCode;
 			// var ops = BitConverter.GetBytes(op.Value);
-			var op1 = (byte)typeof(System.Reflection.Emit.OpCode).GetField("op1", (BindingFlags) ~0).GetValue(i.OpCode);
-			var op2 = (byte)typeof(System.Reflection.Emit.OpCode).GetField("op2", (BindingFlags) ~0).GetValue(i.OpCode);
+			var op1 = (byte) op1FieldInfo.Value.GetValue(i.OpCode);
+			var op2 = (byte) op2FieldInfo.Value.GetValue(i.OpCode);
 			var flow = (byte) op.FlowControl.ToCecilFlowControl();
 			var opCodeType = (byte) op.OpCodeType.ToCecilOpCodeType();
 			var operandType = op.OperandType.ToCecilOperandType();
 			var pop = (byte) op.StackBehaviourPop.ToCecilStackBehaviour();
 			var push = (byte) op.StackBehaviourPush.ToCecilStackBehaviour();
 
-			object operand = i.ToCecilOperand();
+			var operand = i.ToCecilOperand();
 
-			// Instruction.Create(OpCodes.And)
-			
-			// var name = op.Name;
-			// Debug.Log(name);
-			
 			var bytes = new[]
 			{
 				op1, // op1
 				op2, // op2
-				(byte)ToCecilCode(op1, op2), // code
+				(byte) ToCecilCode(op1, op2), // code
 				flow, // flow control
 				opCodeType, // opcode type
-				(byte)operandType, // operand type
+				(byte) operandType, // operand type
 				pop, // pop
 				push, // push
 			};
 			// pack
 			var i1 = BitConverter.ToInt32(bytes, 0);
 			var i2 = BitConverter.ToInt32(bytes, 4);
-			
+
 			// create
 			var opcode = (OpCode) Activator.CreateInstance(typeof(OpCode), (BindingFlags) ~0, null, new object[] {i1, i2}, null, null);
-			var instruction = (Instruction) Activator.CreateInstance(typeof(Instruction), (BindingFlags) ~0, null, 
-					new[] {opcode, operand}, null, null);
+			var instruction = (Instruction) Activator.CreateInstance(typeof(Instruction), (BindingFlags) ~0, null,
+				new[] {opcode, operand}, null, null);
 			instruction.Offset = i.Offset;
-			
+
 			// Debug.Log(i.OpCode.Name + " = " + opcode.Name + "\n" + i.OpCode.OpCodeType + " = " + opcode.OpCodeType);
-			
+
 			return instruction;
 		}
 
@@ -100,7 +95,7 @@ namespace Fody.Weavers.InputDeviceWeaver
 				var cname = cecilNames[i];
 				if (cname == name)
 				{
-					Debug.Log(cname + " == " + name);
+					// Debug.Log(cname + " == " + name);
 					return (Code) i;
 				}
 			}
@@ -108,15 +103,16 @@ namespace Fody.Weavers.InputDeviceWeaver
 			throw new Exception("Could not find cecil code for " + name);
 		}
 
-		private static Lazy<string[]> reflectionOpCodeNamesArray = new Lazy<string[]>(() =>
+		private static readonly Lazy<string[]> reflectionOpCodeNamesArray = new Lazy<string[]>(() =>
 		{
-			var opCodeNamesType = typeof(System.Reflection.Emit.OpCode).Assembly.GetTypes().FirstOrDefault(t => t.FullName == "System.Reflection.Emit.OpCodeNames");
+			var opCodeNamesType = typeof(System.Reflection.Emit.OpCode).Assembly.GetTypes()
+				.FirstOrDefault(t => t.FullName == "System.Reflection.Emit.OpCodeNames");
 			var namesArrayField = opCodeNamesType?.GetField("names", (BindingFlags) ~0);
 			var namesArray = namesArrayField?.GetValue(null) as string[];
 			return namesArray;
 		});
-		
-		private static Lazy<string[]> cecilOpCodeNamesArray = new Lazy<string[]>(() =>
+
+		private static readonly Lazy<string[]> cecilOpCodeNamesArray = new Lazy<string[]>(() =>
 		{
 			var opCodeNamesType = typeof(OpCode).Assembly.GetTypes().FirstOrDefault(t => t.FullName == "Mono.Cecil.Cil.OpCodeNames");
 			var namesArrayField = opCodeNamesType?.GetField("names", (BindingFlags) ~0);
@@ -124,17 +120,23 @@ namespace Fody.Weavers.InputDeviceWeaver
 			return namesArray;
 		});
 
+		private static readonly Lazy<FieldInfo> op1FieldInfo =
+			new Lazy<FieldInfo>(() => typeof(System.Reflection.Emit.OpCode).GetField("op1", (BindingFlags) ~0));
+
+		private static readonly Lazy<FieldInfo> op2FieldInfo =
+			new Lazy<FieldInfo>(() => typeof(System.Reflection.Emit.OpCode).GetField("op2", (BindingFlags) ~0));
+
 		public static object ToCecilOperand(this Mono.Reflection.Instruction instruction)
 		{
 			if (instruction.Operand is Mono.Reflection.Instruction inst)
 			{
 				return inst.ToCecilInstruction();
 			}
-			
+
 			if (instruction.Operand is Mono.Reflection.Instruction[] instructions)
 			{
 				var arr = new Instruction[instructions.Length];
-				for (var i = 0; i < instructions.Length; i++) 
+				for (var i = 0; i < instructions.Length; i++)
 					arr[i] = instructions[i].ToCecilInstruction();
 				return arr;
 			}
@@ -304,9 +306,8 @@ namespace Fody.Weavers.InputDeviceWeaver
 				default:
 					throw new ArgumentOutOfRangeException(nameof(sb), sb, null);
 			}
-			
-			
-			
+
+
 			// unfortunately values are stored differently in enums in cecil and reflection.emit
 
 			// private static string[] OpCodeFieldNamesInOrder = new[]
@@ -339,6 +340,5 @@ namespace Fody.Weavers.InputDeviceWeaver
 			// 	return arr;
 			// }
 		}
-		
 	}
 }

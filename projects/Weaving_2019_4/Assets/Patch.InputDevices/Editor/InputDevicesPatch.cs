@@ -8,6 +8,7 @@ using HarmonyLib;
 using Mono.Cecil;
 using Mono.Reflection;
 using needle.EditorPatching;
+using needle.Weaver;
 using UnityEditor;
 using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
@@ -45,9 +46,9 @@ namespace Fody.Weavers.InputDeviceWeaver
 			// var opCodeConstructor = typeof(OpCode).GetConstructor((BindingFlags)~0, null, CallingConventions.Any, );
 			// if (opCodeConstructor == null) throw new Exception("Failed finding opcode constructor");
 
-			var md = typeof(InputDevices).GetMethod("GetDevices", (BindingFlags) ~0);
-			var inst2 = md.GetInstructions();
-			foreach(var instruction in inst2) Debug.Log(instruction);
+			// var md = typeof(InputDevices).GetMethod("GetDevices", (BindingFlags) ~0);
+			// var inst2 = md.GetInstructions();
+			// foreach(var instruction in inst2) Debug.Log(instruction);
 
 
 			var patchedMethods = Harmony.GetAllPatchedMethods().ToArray();
@@ -57,15 +58,11 @@ namespace Fody.Weavers.InputDeviceWeaver
 				if (method == null) continue;
 
 				var info = Harmony.GetPatchInfo(method);
-				
-				foreach (var pf in info.EnumeratePatches())
-				{
-					var pm = pf.PatchMethod;
-					Debug.Log("PATCHED");
-					var inst = pm.GetInstructions();
-					foreach(Instruction instruction in inst) 
-						Debug.Log(instruction + "\n" + instruction.ToCecilInstruction());
-				}
+				var patch = info.EnumeratePatches().FirstOrDefault(p => p != null && p.PatchMethod != null);
+				Debug.Log("PATCHED");
+				var inst = patch.PatchMethod.GetInstructions().ToCecilInstruction(true);
+				foreach(var instruction in inst) 
+					Debug.Log(instruction);
 				
 				// https://github.com/jbevain/mono.reflection
 				// var inst = method.GetInstructions();
