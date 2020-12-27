@@ -19,10 +19,13 @@ namespace Fody.Weavers.InputDeviceWeaver
 			Debug.Log("Executing InputDevice weaver " + ModuleDefinition.Assembly.FullName);
 			foreach(var type in ModuleDefinition.Types)
 			{
+				Debug.Log(type.FullName);
+				if (type.Name != "InputDevices") continue;
 			    foreach (var method in type.Methods)
 			    {
 				    try
 				    {
+					    if(method.HasBody) continue;
 					    method.LogIL("BEFORE PATCHING " + method.Name);
 					    ProcessMethod(method);
 					    method.LogIL("AFTER PATCHING "  + method.Name);
@@ -37,7 +40,8 @@ namespace Fody.Weavers.InputDeviceWeaver
 
 		public override IEnumerable<string> GetAssembliesForScanning()
 		{
-			yield break;
+			yield return "netstandard";
+			yield return "mscorlib";
 		}
 
 		private void ProcessMethod(MethodDefinition method)
@@ -49,7 +53,6 @@ namespace Fody.Weavers.InputDeviceWeaver
 			// else 
 			if (!method.HasBody)
 			{
-				method.Body = new MethodBody(method); 
 				method.IsManaged = true;
 				method.IsIL = true;
 				method.IsNative = false;
@@ -57,8 +60,33 @@ namespace Fody.Weavers.InputDeviceWeaver
 				method.IsInternalCall = false;
 				method.IsPInvokeImpl = false;
 				method.NoInlining = true;
+				method.Body = new MethodBody(method); 
 				var processor = method.Body?.GetILProcessor();
-				processor.Append(Instruction.Create(OpCodes.Nop));
+				var mrt = method.MethodReturnType;
+				if (mrt != null)
+				{
+					var rt = mrt.ReturnType;
+					// TODO: figure out how to add mscore lib to resolve rt.Resolve() to get TypeDefinition?!
+					Debug.Log(rt.Name);
+					// TODO: figure out better way to get return types
+					var tempVar = new VariableDefinition(rt);
+					method.Body.Variables.Add(tempVar);
+					Debug.Log("tempvar? " + tempVar.VariableType);
+					switch (rt.Name)
+					{
+						case "String":
+							processor.Emit(OpCodes.Ldstr, "");
+							processor.Append(Instruction.Create(OpCodes.Ret));
+							break;
+						default:
+							processor.Emit(OpCodes.Ldloc, tempVar);
+							processor.Append(Instruction.Create(OpCodes.Ret));
+							break;
+						case "Void":
+							break;
+					}
+					return;
+				}
 				processor.Append(Instruction.Create(OpCodes.Ret));
 			}
 		}
