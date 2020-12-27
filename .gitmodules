@@ -1,0 +1,3 @@
+[submodule "modules/editorpatching"]
+	path = modules/editorpatching
+	url = https://gitlab.com/prefrontalcortex/packages/pfc-editorpatching.git
