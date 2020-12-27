@@ -25,10 +25,7 @@ namespace Fody.Weavers.InputDeviceWeaver
 			    {
 				    try
 				    {
-					    if(method.HasBody) continue;
-					    method.LogIL("BEFORE PATCHING " + method.Name);
 					    ProcessMethod(method);
-					    method.LogIL("AFTER PATCHING "  + method.Name);
 				    }
 				    catch (Exception e)
 				    {
@@ -53,6 +50,7 @@ namespace Fody.Weavers.InputDeviceWeaver
 			else 
 			if (!method.HasBody)
 			{
+				method.LogIL("BEFORE PATCHING " + method.Name);
 				method.IsManaged = true;
 				method.IsIL = true;
 				method.IsNative = false;
@@ -88,11 +86,13 @@ namespace Fody.Weavers.InputDeviceWeaver
 					return;
 				}
 				processor.Append(Instruction.Create(OpCodes.Ret));
+				method.LogIL("AFTER PATCHING "  + method.Name);
 			}
 		}
 
 		private void FixGetDevices(MethodDefinition method)
 		{
+			method.LogIL("BEFORE PATCHING " + method.Name);
 			var processor = method.Body?.GetILProcessor();
 			var found = false;
 			for (var index = method.Body.Instructions.Count - 1; index >= 0; index--)
@@ -113,6 +113,7 @@ namespace Fody.Weavers.InputDeviceWeaver
 
 				if (!found) method.Body.Instructions.RemoveAt(index);
 			}
+			method.LogIL("AFTER PATCHING "  + method.Name);
 		}
 
 		private List<Instruction> GetInstructions(MethodDefinition method)
