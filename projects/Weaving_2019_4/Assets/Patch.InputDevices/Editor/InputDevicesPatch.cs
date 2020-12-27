@@ -16,7 +16,7 @@ using UnityEngine.XR;
 using Instruction = Mono.Reflection.Instruction;
 using OpCode = Mono.Cecil.Cil.OpCode;
 
-namespace Editor
+namespace Fody.Weavers.InputDeviceWeaver
 {
 	[HarmonyPatch(typeof(InputDevices))]
 	public class InputDevicesPatch : IPreprocessBuildWithReport
@@ -63,7 +63,8 @@ namespace Editor
 					var pm = pf.PatchMethod;
 					Debug.Log("PATCHED");
 					var inst = pm.GetInstructions();
-					foreach(Instruction instruction in inst) Debug.Log(instruction);
+					foreach(Instruction instruction in inst) 
+						Debug.Log(instruction + "\n" + instruction.ToCecilInstruction());
 				}
 				
 				// https://github.com/jbevain/mono.reflection
