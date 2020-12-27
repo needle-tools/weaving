@@ -53,15 +53,16 @@ namespace Fody.Weavers.InputDeviceWeaver
 			var op2 = (byte)typeof(System.Reflection.Emit.OpCode).GetField("op2", (BindingFlags) ~0).GetValue(i.OpCode);
 			var flow = (byte) op.FlowControl.ToCecilFlowControl();
 			var opCodeType = (byte) op.OpCodeType.ToCecilOpCodeType();
-			var operand = (byte) op.OperandType.ToCecilOperandType();
+			var operandType = op.OperandType.ToCecilOperandType();
 			var pop = (byte) op.StackBehaviourPop.ToCecilStackBehaviour();
 			var push = (byte) op.StackBehaviourPush.ToCecilStackBehaviour();
-			
-			// Instruction.Create(OpCodes.And)
 
+			object operand = i.ToCecilOperand();
+
+			// Instruction.Create(OpCodes.And)
+			
 			// var name = op.Name;
 			// Debug.Log(name);
-			
 			
 			var bytes = new[]
 			{
@@ -70,7 +71,7 @@ namespace Fody.Weavers.InputDeviceWeaver
 				(byte)ToCecilCode(op1, op2), // code
 				flow, // flow control
 				opCodeType, // opcode type
-				operand, // operand type
+				(byte)operandType, // operand type
 				pop, // pop
 				push, // push
 			};
@@ -81,7 +82,7 @@ namespace Fody.Weavers.InputDeviceWeaver
 			// create
 			var opcode = (OpCode) Activator.CreateInstance(typeof(OpCode), (BindingFlags) ~0, null, new object[] {i1, i2}, null, null);
 			var instruction = (Instruction) Activator.CreateInstance(typeof(Instruction), (BindingFlags) ~0, null, 
-					new[] {opcode, i.Operand}, null, null);
+					new[] {opcode, operand}, null, null);
 			instruction.Offset = i.Offset;
 			
 			// Debug.Log(i.OpCode.Name + " = " + opcode.Name + "\n" + i.OpCode.OpCodeType + " = " + opcode.OpCodeType);
@@ -122,7 +123,26 @@ namespace Fody.Weavers.InputDeviceWeaver
 			var namesArray = namesArrayField?.GetValue(null) as string[];
 			return namesArray;
 		});
-		
+
+		public static object ToCecilOperand(this Mono.Reflection.Instruction instruction)
+		{
+			if (instruction.Operand is Mono.Reflection.Instruction inst)
+			{
+				return inst.ToCecilInstruction();
+			}
+			
+			if (instruction.Operand is Mono.Reflection.Instruction[] instructions)
+			{
+				var arr = new Instruction[instructions.Length];
+				for (var i = 0; i < instructions.Length; i++) 
+					arr[i] = instructions[i].ToCecilInstruction();
+				return arr;
+			}
+
+			// if(instruction.Operand != null)
+			// 	throw new Exception("Missing Operand conversion for " + instruction.Operand);
+			return instruction.Operand;
+		}
 
 		public static OpCodeType ToCecilOpCodeType(this System.Reflection.Emit.OpCodeType b)
 		{
@@ -161,7 +181,9 @@ namespace Fody.Weavers.InputDeviceWeaver
 					return OperandType.InlineMethod;
 				case System.Reflection.Emit.OperandType.InlineNone:
 					return OperandType.InlineNone;
+#pragma warning disable 618
 				case System.Reflection.Emit.OperandType.InlinePhi:
+#pragma warning restore 618
 					return OperandType.InlinePhi;
 				case System.Reflection.Emit.OperandType.InlineR:
 					return OperandType.InlineR;
