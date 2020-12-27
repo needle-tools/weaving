@@ -12,8 +12,6 @@ namespace _Tests.Weaver_InputDevice
 	{
 		private static void FakeDeviceList(List<InputDevice> list)
 		{
-			if(!Application.isPlaying) return;
-			if (Time.time < 2) return;
 			Debug.Log("Add devices");
 			var dev = new InputDevice();
 			list.Add(dev);
