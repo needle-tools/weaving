@@ -87,7 +87,7 @@ namespace Fody
 			if (pathIndex > 0)
 				return assemblyPath.Substring(pathIndex);
 
-			const string k_DataPath = "Editor/Data/Managed/";
+			const string k_DataPath = "/Editor/Data/";
 			pathIndex = assemblyPath.LastIndexOf(k_DataPath, StringComparison.InvariantCulture);
 			if (pathIndex > 0)
 				return assemblyPath.Substring(pathIndex);

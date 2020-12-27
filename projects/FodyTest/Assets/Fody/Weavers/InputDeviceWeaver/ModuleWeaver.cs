@@ -1,11 +1,14 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using _Tests.Weaver_InputDevice;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using UnityEngine;
 using UnityEngine.XR;
+using MethodBody = Mono.Cecil.Cil.MethodBody;
 
 namespace Fody.Weavers.InputDeviceWeaver
 {
@@ -18,7 +21,16 @@ namespace Fody.Weavers.InputDeviceWeaver
 			{
 			    foreach (var method in type.Methods)
 			    {
-			        ProcessMethod( method );
+				    try
+				    {
+					    method.LogIL("BEFORE PATCHING " + method.Name);
+					    ProcessMethod(method);
+					    method.LogIL("AFTER PATCHING "  + method.Name);
+				    }
+				    catch (Exception e)
+				    {
+					    Debug.LogException(e);
+				    }
 			    }
 			}
 		}
@@ -30,10 +42,30 @@ namespace Fody.Weavers.InputDeviceWeaver
 
 		private void ProcessMethod(MethodDefinition method)
 		{
-			if (method.Name != "GetDevices") return;
-			Debug.Log("Process " + method.Name);
-			ILProcessor processor = method.Body.GetILProcessor();
-			method.LogIL("BEFORE PATCHING");
+			// if (method.Name == "GetDevices")
+			// {
+			// 	FixGetDevices(method);
+			// }
+			// else 
+			if (!method.HasBody)
+			{
+				method.Body = new MethodBody(method); 
+				method.IsManaged = true;
+				method.IsIL = true;
+				method.IsNative = false;
+				method.PInvokeInfo = null;
+				method.IsInternalCall = false;
+				method.IsPInvokeImpl = false;
+				method.NoInlining = true;
+				var processor = method.Body?.GetILProcessor();
+				processor.Append(Instruction.Create(OpCodes.Nop));
+				processor.Append(Instruction.Create(OpCodes.Ret));
+			}
+		}
+
+		private void FixGetDevices(MethodDefinition method)
+		{
+			var processor = method.Body?.GetILProcessor();
 			var found = false;
 			for (var index = method.Body.Instructions.Count - 1; index >= 0; index--)
 			{
@@ -53,7 +85,6 @@ namespace Fody.Weavers.InputDeviceWeaver
 
 				if (!found) method.Body.Instructions.RemoveAt(index);
 			}
-			method.LogIL("AFTER PATCHING");
 		}
 
 		private List<Instruction> GetInstructions(MethodDefinition method)

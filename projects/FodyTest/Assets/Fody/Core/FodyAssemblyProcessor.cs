@@ -257,6 +257,7 @@ namespace Fody
 
                 try
                 {
+                    Debug.Log("<b>Execute " + weaver + "</b>");
                     weaver.Run("Execute");
                 }
                 catch (Exception e)
