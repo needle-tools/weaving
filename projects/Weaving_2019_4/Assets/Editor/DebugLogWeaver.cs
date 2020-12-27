@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+using needle.Weaver;
 using UnityEngine;
 
 namespace Fody.Weavers.DebugLogWeaver

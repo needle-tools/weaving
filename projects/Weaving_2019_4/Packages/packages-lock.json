@@ -1,5 +1,11 @@
 {
   "dependencies": {
+    "com.needle.editorpatching": {
+      "version": "file:../../../modules/editorpatching/package",
+      "depth": 0,
+      "source": "local",
+      "dependencies": {}
+    },
     "com.needle.weaver": {
       "version": "file:../../../package",
       "depth": 0,

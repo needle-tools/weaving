@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Xml;
 using System.Xml.Linq;
+using Fody;
 using Mono.Cecil;
 using Mono.Cecil.Pdb;
 using UnityEditor;
@@ -13,7 +14,7 @@ using UnityEngine;
 using Assembly = System.Reflection.Assembly;
 
 
-namespace Fody
+namespace needle.Weaver
 {
     public static class FodyAssemblyProcessor
     {

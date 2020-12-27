@@ -4,7 +4,7 @@ using Mono.Cecil;
 using Mono.Cecil.Cil;
 using UnityEngine;
 
-namespace Fody
+namespace needle.Weaver
 {
 	public static class MethodDefinitionExtensions
 	{

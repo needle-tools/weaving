@@ -5,6 +5,7 @@ using System.Reflection;
 using _Tests.Weaver_InputDevice;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+using needle.Weaver;
 using UnityEngine;
 using UnityEngine.XR;
 using MethodBody = Mono.Cecil.Cil.MethodBody;

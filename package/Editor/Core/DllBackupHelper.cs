@@ -5,7 +5,7 @@ using System.Linq;
 using Mono.Cecil;
 using UnityEngine;
 
-namespace Fody
+namespace needle.Weaver
 {
 	public static class DllBackupHelper
 	{
