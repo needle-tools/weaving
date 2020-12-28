@@ -147,6 +147,14 @@ namespace needle.Weaver
 
 			if (instruction.Operand != null)
 			{
+				// for cecil to write the module we need to convert the operand data
+				// it expects internally types like IMetadataTokenProvider etc
+				// we can just read the assembly where the type is defined to get a MethodReference
+				// TODO: make local variables work
+				
+				
+				
+				// TODO: cleanup this reflection
 				var type = instruction.Operand.GetType();
 				object GetProperty(string name)
 				{
@@ -162,6 +170,7 @@ namespace needle.Weaver
 				{
 					var t = (Type) GetProperty("DeclaringType");
 					var method = (MethodInfo) GetMethod("GetBaseMethod");
+					// cache modules?
 					var mod = ModuleDefinition.ReadModule(t.Assembly.Location);
 					var reference = mod.ImportReference(method);
 					mod.Dispose();

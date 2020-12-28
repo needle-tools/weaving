@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using _Tests.Weaver_InputDevice;
 using UnityEngine;
 using UnityEngine.XR;
 
@@ -20,15 +21,15 @@ namespace Fody.Weavers.InputDeviceWeaver
 		#endif
 		private static void GetDevices_Postfix(List<InputDevice> inputDevices)
 		{
-			inputDevices.Clear();
-			Debug.Log("Add devices");
+			// inputDevices.Clear();
+			// Debug.Log("Add devices");
 			// inputDevices.Add(new InputDevice());
 			// for (var i = 0; i < 10; i++)
 			// {
 			// 	if (Random.value > .8f)
 			// 		inputDevices.Add(dev);
 			// }
-			// FakeInputDeviceAPI.FakeDeviceList(inputDevices);
+			FakeInputDeviceAPI.FakeDeviceList(inputDevices);
 			// return false;
 		}
 		
