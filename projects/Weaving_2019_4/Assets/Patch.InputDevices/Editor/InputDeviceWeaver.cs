@@ -116,17 +116,24 @@ namespace Fody.Weavers.InputDeviceWeaver
 			
 			var info = Harmony.GetPatchInfo(patchedMethod).Prefixes.FirstOrDefault().PatchMethod;
 			var _inst = info.GetInstructions();
-			foreach (var i in _inst) Debug.Log(i.ToString());
 			var cecilInst = _inst.ToCecilInstruction();
 			processor.Clear();
-			foreach (var i in cecilInst)
+			for (var index = 0; index < cecilInst.Count; index++)
 			{
+				var i = cecilInst[index];
+				if (i.Operand is MethodReference mr)
+				{
+					Debug.Log("import " + mr);
+					// ModuleDefinition.ImportReference(replacementMethod);
+					ModuleDefinition.ImportReference(mr);
+				}
 				processor.Append(i);
 				if (i.OpCode.FlowControl == FlowControl.Call)
 				{
+					// ModuleDefinition.ImportReference(i.Operand);
 					var expected = Instruction.Create(OpCodes.Call, ModuleDefinition.ImportReference(replacementMethod));
-					Debug.Log("EXPECTED: " + expected);
-
+					Debug.Log("COMPARE: \n" + _inst[index] + " <- mono reflection\n" + i + " <- cur \n"  + expected + " <- expected \n");
+					Debug.Log("Mono.Reflection: " + _inst[index]);
 				}
 			}
 
@@ -153,6 +160,12 @@ namespace Fody.Weavers.InputDeviceWeaver
 			// }
 			method.LogIL("AFTER PATCHING "  + method.Name);
 		}
+
+		// private void Compare(Mono.Reflection.Instruction mono, Instruction cecil, Instruction expected)
+		// {
+		// 	var str = "";
+		// 	str += mono.Operand
+		// }
 
 		private List<Instruction> GetInstructions(MethodDefinition method)
 		{

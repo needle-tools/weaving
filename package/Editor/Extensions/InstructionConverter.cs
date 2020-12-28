@@ -3,6 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
+using Mono.Cecil;
 using Mono.Cecil.Cil;
 using UnityEngine;
 
@@ -143,11 +145,42 @@ namespace needle.Weaver
 				return arr;
 			}
 
+			if (instruction.Operand != null && instruction.Operand.GetType().FullName == "System.Reflection.MonoMethod")
+			{
+				var type = instruction.Operand.GetType();
+				object GetProperty(string name)
+				{
+					return type.GetProperty(name, (BindingFlags) ~0).GetValue(instruction.Operand);
+				}
+				object GetMethod(string name)
+				{
+					return type.GetMethod(name, (BindingFlags) ~0).Invoke(instruction.Operand, null);
+				}
+
+				var t = (Type) GetProperty("DeclaringType");
+				var method = (MethodInfo) GetMethod("GetBaseMethod");
+				var mod = ModuleDefinition.ReadModule(t.Assembly.Location);
+				var reference = mod.ImportReference(method);
+				mod.Dispose();
+				return reference;
+			}
+
 			// if(instruction.Operand != null)
 			// 	throw new Exception("Missing Operand conversion for " + instruction.Operand);
 			return instruction.Operand;
 		}
 
+		// private static IReflectionImporter reflection_importer;
+		// internal static IReflectionImporter ReflectionImporter
+		// {
+		// 	get
+		// 	{
+		// 		if (reflection_importer == null)
+		// 			Interlocked.CompareExchange<IReflectionImporter>(ref reflection_importer, (IReflectionImporter) new DefaultReflectionImporter(this, (IReflectionImporter) null);
+		// 		return reflection_importer;
+		// 	}
+		// }
+		
 		public static OpCodeType ToCecilOpCodeType(this System.Reflection.Emit.OpCodeType b)
 		{
 			switch (b)
