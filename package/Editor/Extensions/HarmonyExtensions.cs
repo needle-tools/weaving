@@ -37,7 +37,7 @@ namespace needle.Weaver
 			var _inst = info.GetInstructions();
 			var cecilInst = _inst.ToCecilInstruction();
 			processor.Clear();
-			method.Body.Variables.Clear();
+			// method.Body.Variables.Clear();
 			for (var index = 0; index < cecilInst.Count; index++)
 			{
 				var i = cecilInst[index];
