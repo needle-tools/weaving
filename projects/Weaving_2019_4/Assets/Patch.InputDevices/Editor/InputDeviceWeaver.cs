@@ -53,8 +53,6 @@ namespace Fody.Weavers.InputDeviceWeaver
 				FixGetDevices(method);
 			}
 			
-			return;
-			
 			if 
 				(!method.HasBody)
 			{
