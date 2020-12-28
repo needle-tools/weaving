@@ -37,7 +37,7 @@ namespace needle.Weaver
             scroll = EditorGUILayout.BeginScrollView(scroll);
 
             EditorGUILayout.BeginVertical();
-           
+            WeaverSettings.instance.PatchOnBuild = EditorGUILayout.Toggle("Allow Patch on Build", WeaverSettings.instance.PatchOnBuild);
             EditorGUILayout.EndVertical();
 
             EditorGUILayout.EndScrollView();
@@ -46,9 +46,6 @@ namespace needle.Weaver
             
             EditorGUILayout.BeginHorizontal();
             GUILayout.FlexibleSpace();
-            if(GUILayout.Button("Refresh Patch List", GUILayout.Width(180)))
-            {
-            }
             EditorGUILayout.EndHorizontal();
             
             EditorGUILayout.EndVertical();
@@ -82,8 +79,10 @@ namespace needle.Weaver
     }
 
     [FilePath("ProjectSettings/NeedleWeaverSettings.asset", FilePathAttribute.Location.ProjectFolder)]
-    internal class WeaverSettings : ScriptableSingleton<WeaverSettings>
+    public class WeaverSettings : ScriptableSingleton<WeaverSettings>
     {
         public void Save() => Save(true);
+
+        public bool PatchOnBuild = false;
     }
 }

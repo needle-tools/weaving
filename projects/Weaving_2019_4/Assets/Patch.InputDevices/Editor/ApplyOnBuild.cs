@@ -1,4 +1,5 @@
 #if UNITY_WEBGL
+using needle.Weaver;
 using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
 
@@ -9,7 +10,8 @@ namespace Fody.Weavers.InputDeviceWeaver
 		public int callbackOrder => 1000;
 		public void OnPreprocessBuild(BuildReport report)
 		{
-			Actions.WeaveWebGlInputDevices();
+			if(WeaverSettings.instance.PatchOnBuild)
+				Actions.WeaveWebGlInputDevices();
 		}
 	}
 }

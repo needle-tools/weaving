@@ -28,8 +28,12 @@ namespace _Tests.Weaver_InputDevice
         {
             var list = new List<InputDevice>();
             InputDevices.GetDevices(list);
-            if(Text)
+            var headDevice = InputDevices.GetDeviceAtXRNode(XRNode.Head);
+            if (Text)
+            {
                 Text.text = $"Found {list.Count} InputDevices";
+                Text.text += "\n Has Head device... " + headDevice.isValid;
+            }
             Debug.Log("InputDevices: " + list.Count + "\n" + string.Join("\n", list.Select(e =>
             {
                 return e.name;

@@ -18,7 +18,8 @@ namespace needle.Weaver
 			foreach (var inst in instructions)
 			{
 				var conv = inst.ToCecilInstruction();
-				if(debug && conv.ToString() != inst.ToString()) Debug.LogWarning("Potential Mismatch:\n" + inst + "\n" + conv);
+				if(debug)
+					Debug.Log(inst + "\n" + conv);
 				list.Add(conv);
 			}
 			return list;
@@ -145,8 +146,11 @@ namespace needle.Weaver
 				return arr;
 			}
 
+			
 			if (instruction.Operand != null)
 			{
+				// Debug.LogWarning(instruction.Operand);
+				
 				// for cecil to write the module we need to convert the operand data
 				// it expects internally types like IMetadataTokenProvider etc
 				// we can just read the assembly where the type is defined to get a MethodReference
@@ -180,12 +184,15 @@ namespace needle.Weaver
 				
 				if(instruction.Operand is LocalVariableInfo lvi)
 				{
-					var lt = lvi.LocalType;
-					if (lt == null) throw new Exception("Could not get local type for " + instruction.Operand);
-					var mod = ModuleDefinition.ReadModule(lt.Assembly.Location);
-					var tr = new TypeReference(lt.Namespace, lt.Name, mod, mod);
-					var vd = new VariableDefinition(tr);
-					return vd;
+					// var lt = lvi.LocalType;
+					// if (lt == null) throw new Exception("Could not get local type for " + instruction.Operand);
+					// var mod = ModuleDefinition.ReadModule(lt.Assembly.Location);
+					// var tr = new TypeReference(lt.Namespace, lt.Name, mod, mod);
+					// var vd = new VariableDefinition(tr);
+					//
+					// Debug.LogWarning(vd + " - " + tr);
+					// mod.Dispose();
+					return lvi;
 				}
 				
 				if(instruction.Operand.GetType().FullName == "System.RuntimeType")
@@ -195,11 +202,12 @@ namespace needle.Weaver
 					if (actualType == null) throw new Exception("Could not get type for " + instruction.Operand);
 					var mod = ModuleDefinition.ReadModule(actualType.Assembly.Location);
 					var tr = new TypeReference(actualType.Namespace, actualType.Name, mod, mod);
+					mod.Dispose();
 					return tr;
 				}
 				
-				Debug.LogWarning(instruction.Operand);
 			}
+			
 
 			// if(instruction.Operand != null)
 			// 	throw new Exception("Missing Operand conversion for " + instruction.Operand);

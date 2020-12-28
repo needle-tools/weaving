@@ -46,12 +46,11 @@ namespace Fody.Weavers.InputDeviceWeaver
 				// return processor.Patch();
 				
 				// var patch = info.EnumeratePatches().OrderByDescending(p => p.priority).FirstOrDefault(p => p.PatchMethod != null);
-				foreach (var patch in info.EnumeratePatches())
+				foreach (var patch in info.Postfixes)
 				{
-					Debug.Log("PATCHED " + method.FullDescription() + " in " + patch.owner);
-					var inst = patch.PatchMethod.GetInstructions().ToCecilInstruction(true);
-					foreach(var instruction in inst) 
-						Debug.Log(instruction);
+					Debug.Log("<b>PATCHED</b> " + method.FullDescription() + "\nin " + patch.owner);
+					var inst = patch.PatchMethod.GetInstructions();
+					var cecilInst = inst.ToCecilInstruction(true);
 					break;
 				}
 				

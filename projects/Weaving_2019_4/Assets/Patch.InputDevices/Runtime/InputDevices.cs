@@ -7,6 +7,11 @@ namespace needle.Patch.InputDevices
 {
 	internal static class InputDevices
 	{
+		public static InputDevice GetDeviceAtXRNode(XRNode node)
+		{
+			return new InputDevice();
+		}
+		
 		public static void GetDeviceList(List<InputDevice> list)
 		{
 			Debug.Log("Add devices");

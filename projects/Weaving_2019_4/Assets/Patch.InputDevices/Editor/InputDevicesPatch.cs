@@ -8,12 +8,13 @@ namespace Fody.Weavers.InputDeviceWeaver
 	[HarmonyPatch(typeof(UnityEngine.XR.InputDevices))]
 	public class InputDevicesPatch
 	{
-
 		[HarmonyPostfix]
 		[HarmonyPatch("GetDeviceAtXRNode")]
 		private static InputDevice GetDeviceAtXRNode(InputDevice device, XRNode node)
 		{
-			return new InputDevice();
+			// can we call the default constructor if there is none?
+			// to research: if we try to declare "new InputDevice()" here building fails due to IL using "initobj" vs "newobj"
+			return InputDevices.GetDeviceAtXRNode(node);
 		}
 		
 		[HarmonyPostfix]
@@ -22,13 +23,5 @@ namespace Fody.Weavers.InputDeviceWeaver
 		{
 			InputDevices.GetDeviceList(inputDevices);
 		}
-
-		// [HarmonyPostfix]
-		// [HarmonyPatch("GetDevices")]
-		// private static void GetDevices_Postfix(List<InputDevice> inputDevices)
-		// {
-		// 	Debug.Log("POSTFIX");
-		// }
-
 	}
 }
