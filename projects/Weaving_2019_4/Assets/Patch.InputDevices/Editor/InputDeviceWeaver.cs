@@ -3,11 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using _Tests.Weaver_InputDevice;
+using HarmonyLib;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+using Mono.Cecil.Rocks;
+using Mono.Reflection;
 using needle.Weaver;
 using UnityEngine;
 using UnityEngine.XR;
+using Instruction = Mono.Cecil.Cil.Instruction;
 using MethodBody = Mono.Cecil.Cil.MethodBody;
 
 namespace Fody.Weavers.InputDeviceWeaver
@@ -19,7 +23,7 @@ namespace Fody.Weavers.InputDeviceWeaver
 			Debug.Log("Executing InputDevice weaver " + ModuleDefinition.Assembly.FullName);
 			foreach(var type in ModuleDefinition.Types)
 			{
-				Debug.Log(type.FullName);
+				// Debug.Log(type.FullName);
 				if (type.Name != "InputDevices") continue;
 			    foreach (var method in type.Methods)
 			    {
@@ -39,6 +43,7 @@ namespace Fody.Weavers.InputDeviceWeaver
 		{
 			yield return "netstandard";
 			yield return "mscorlib";
+			yield return "System";
 		}
 
 		private void ProcessMethod(MethodDefinition method)
@@ -47,7 +52,9 @@ namespace Fody.Weavers.InputDeviceWeaver
 			{
 				FixGetDevices(method);
 			}
-			else 
+			
+			return;
+			
 			if 
 				(!method.HasBody)
 			{
@@ -66,25 +73,22 @@ namespace Fody.Weavers.InputDeviceWeaver
 				{
 					var rt = mrt.ReturnType;
 					// TODO: figure out how to add mscore lib to resolve rt.Resolve() to get TypeDefinition?!
-					Debug.Log(rt.Name);
+					// Debug.Log(rt.Name);
 					// TODO: figure out better way to get return types
 					var tempVar = new VariableDefinition(rt);
 					method.Body.Variables.Add(tempVar);
-					Debug.Log("tempvar? " + tempVar.VariableType);
+					// Debug.Log("tempvar? " + tempVar.VariableType);
 					switch (rt.Name)
 					{
 						case "String":
 							processor.Emit(OpCodes.Ldstr, "");
-							processor.Append(Instruction.Create(OpCodes.Ret));
 							break;
 						default:
 							processor.Emit(OpCodes.Ldloc, tempVar);
-							processor.Append(Instruction.Create(OpCodes.Ret));
 							break;
 						case "Void":
 							break;
 					}
-					return;
 				}
 				processor.Append(Instruction.Create(OpCodes.Ret));
 				method.LogIL("AFTER PATCHING "  + method.Name);
@@ -94,26 +98,59 @@ namespace Fody.Weavers.InputDeviceWeaver
 		private void FixGetDevices(MethodDefinition method)
 		{
 			method.LogIL("BEFORE PATCHING " + method.Name);
-			var processor = method.Body?.GetILProcessor();
-			var found = false;
-			for (var index = method.Body.Instructions.Count - 1; index >= 0; index--)
+			Debug.Log(method.FullName);
+			var patched = Harmony.GetAllPatchedMethods();
+			MethodBase patchedMethod = null;
+			foreach (var m in patched)
 			{
-				var inst = method.Body.Instructions[index];
-				if (inst.ToString().Contains("callvirt System.Void System.Collections.Generic.List`1<UnityEngine.XR.InputDevice>::Clear()"))
+				Debug.Log(m.FullName());
+				if (m.FullName() == method.FullName)
 				{
-					found = true;
-					var instructions = GetInstructions(method);
-					var current = Instruction.Create(OpCodes.Nop);
-					processor.InsertAfter(index, current);
-					foreach (var instruction in instructions )
-					{
-						processor.InsertAfter( current, instruction); 
-						current = instruction;
-					}
+					patchedMethod = m;
+					break;
 				}
-
-				if (!found) method.Body.Instructions.RemoveAt(index);
 			}
+			
+			if (patchedMethod == null) throw new Exception("Missing patched method to apply");
+			var processor = method.Body.GetILProcessor();
+			
+			var info = Harmony.GetPatchInfo(patchedMethod).Prefixes.FirstOrDefault().PatchMethod;
+			var _inst = info.GetInstructions();
+			foreach (var i in _inst) Debug.Log(i.ToString());
+			var cecilInst = _inst.ToCecilInstruction();
+			processor.Clear();
+			foreach (var i in cecilInst)
+			{
+				processor.Append(i);
+				if (i.OpCode.FlowControl == FlowControl.Call)
+				{
+					var expected = Instruction.Create(OpCodes.Call, ModuleDefinition.ImportReference(replacementMethod));
+					Debug.Log("EXPECTED: " + expected);
+
+				}
+			}
+
+			// patch.PatchMethod.GetInstructions().ToCecilInstruction(true)
+				
+			// var found = false;
+			// for (var index = method.Body.Instructions.Count - 1; index >= 0; index--)
+			// {
+			// 	var inst = method.Body.Instructions[index];
+			// 	if (inst.ToString().Contains("callvirt System.Void System.Collections.Generic.List`1<UnityEngine.XR.InputDevice>::Clear()"))
+			// 	{
+			// 		found = true;
+			// 		var instructions = GetInstructions(method);
+			// 		var current = Instruction.Create(OpCodes.Nop);
+			// 		processor.InsertAfter(index, current);
+			// 		foreach (var instruction in instructions )
+			// 		{
+			// 			processor.InsertAfter( current, instruction); 
+			// 			current = instruction;
+			// 		}
+			// 	}
+			//
+			// 	if (!found) method.Body.Instructions.RemoveAt(index);
+			// }
 			method.LogIL("AFTER PATCHING "  + method.Name);
 		}
 
@@ -141,5 +178,6 @@ namespace Fody.Weavers.InputDeviceWeaver
 					       parameters[0].ParameterType == typeof( List<InputDevice> );
 				} );
 		}
+
 	}
 }

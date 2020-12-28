@@ -116,7 +116,7 @@ namespace needle.Weaver
             {
                 // Lock assemblies while they may be altered
                 EditorApplication.LockReloadAssemblies();
-                ProcessAssemblies(assemblyPaths, assemblyResolver, inMemory);
+                ProcessAssemblies(assemblyPaths, assemblyResolver);
             }
             catch (Exception e)
             {
@@ -130,7 +130,7 @@ namespace needle.Weaver
             Debug.Log("Fody processor finished");
         }
 
-        public static void ProcessAssemblies(HashSet<string> assemblyPaths, IAssemblyResolver assemblyResolver, bool inMemory)
+        public static void ProcessAssemblies(HashSet<string> assemblyPaths, IAssemblyResolver assemblyResolver)
         {
             // Create reader parameters with resolver
             var readerParameters = new ReaderParameters();
@@ -183,7 +183,7 @@ namespace needle.Weaver
                 try
                 {
 
-                    stream = LoadAssemblyForModule(assemblyPath, inMemory);
+                    stream = LoadAssemblyForModule(assemblyPath);
                     module = ModuleDefinition.ReadModule(stream, readerParameters);
                     var modified = module.IsModified();
                     stream.Dispose();
@@ -191,8 +191,8 @@ namespace needle.Weaver
                     DllBackupHelper.GetFromBackupIfAvailable(assemblyPath, modified);
 
                     // Read assembly
-                    stream = LoadAssemblyForModule(assemblyPath, inMemory);
-                    Debug.Log("Read module from stream (in memory? " + inMemory + ")");
+                    stream = LoadAssemblyForModule(assemblyPath);
+                    Debug.Log("Read module from stream");
                     module = ModuleDefinition.ReadModule(stream, readerParameters);
 
                     Debug.Log("Prepare weavers");
@@ -208,9 +208,13 @@ namespace needle.Weaver
                         Debug.Log("Done writing to " + path);
                     }
                 }
+                catch (InvalidCastException e)
+                {
+                    Debug.LogException(e);
+                }
                 catch (IOException e)
                 {
-                    Debug.LogError(e);
+                    Debug.LogException(e);
                 }
                 catch (Exception e)
                 {
@@ -224,7 +228,7 @@ namespace needle.Weaver
             }
         }
 
-        private static Stream LoadAssemblyForModule(string assemblyPath, bool inMemory)
+        private static Stream LoadAssemblyForModule(string assemblyPath, bool inMemory = false)
         {
             if (!inMemory)
             {

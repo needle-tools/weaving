@@ -48,12 +48,11 @@ namespace Fody.Weavers.InputDeviceWeaver
 				// var patch = info.EnumeratePatches().OrderByDescending(p => p.priority).FirstOrDefault(p => p.PatchMethod != null);
 				foreach (var patch in info.EnumeratePatches())
 				{
-					Debug.Log("PATCHED " + method.Name + " in " + patch.owner);
-					Debug.Log("before:\n" + string.Join("\n", patch.before));
-					Debug.Log("after:\n" + string.Join("\n", patch.after));
+					Debug.Log("PATCHED " + method.FullDescription() + " in " + patch.owner);
 					var inst = patch.PatchMethod.GetInstructions().ToCecilInstruction(true);
 					foreach(var instruction in inst) 
 						Debug.Log(instruction);
+					break;
 				}
 				
 				// https://github.com/jbevain/mono.reflection

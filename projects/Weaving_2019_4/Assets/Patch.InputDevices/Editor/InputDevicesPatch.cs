@@ -10,7 +10,7 @@ using Instruction = Mono.Reflection.Instruction;
 namespace Fody.Weavers.InputDeviceWeaver
 {
 	[HarmonyPatch(typeof(InputDevices))]
-	public class InputDevicesPatch : IPreprocessBuildWithReport
+	public class InputDevicesPatch// : IPreprocessBuildWithReport
 	{	
 		[HarmonyPrefix]
 		[HarmonyPatch("GetDevices")]
@@ -20,18 +20,18 @@ namespace Fody.Weavers.InputDeviceWeaver
 			return false;
 		}
 		
-		[HarmonyPostfix]
-		[HarmonyPatch("GetDevices")]
-		private static void GetDevices_Postfix(List<InputDevice> inputDevices)
-		{
-			Debug.Log("POSTFIX");
-		}
+		// [HarmonyPostfix]
+		// [HarmonyPatch("GetDevices")]
+		// private static void GetDevices_Postfix(List<InputDevice> inputDevices)
+		// {
+		// 	Debug.Log("POSTFIX");
+		// }
 
-		public int callbackOrder => 1000;
-		public void OnPreprocessBuild(BuildReport report)
-		{
-			TestHarmonyPatchILConversion.PrintIL();
-			Debug.LogError("error to stop build");
-		}
+		// public int callbackOrder => 1000;
+		// public void OnPreprocessBuild(BuildReport report)
+		// {
+		// 	TestHarmonyPatchILConversion.PrintIL();
+		// 	Debug.LogError("error to stop build");
+		// }
 	}
 }

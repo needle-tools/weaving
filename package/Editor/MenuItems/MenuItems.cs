@@ -25,7 +25,7 @@ namespace needle.Weaver
 			var dlls = Directory.GetFiles(Constants.WebGLAssembliesPath, "UnityEngine.XRModule.dll", SearchOption.AllDirectories);
 			var assemblies = new HashSet<string>();
 			foreach (var dll in dlls) assemblies.Add(dll);
-			FodyAssemblyProcessor.ProcessAssemblies(assemblies, res, false);
+			FodyAssemblyProcessor.ProcessAssemblies(assemblies, res);
 		}
 
 	}

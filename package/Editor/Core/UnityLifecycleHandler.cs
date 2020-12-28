@@ -26,7 +26,14 @@ namespace needle.Weaver
 
         static UnityLifecycleHandler()
         {
-            
+            // var res = new DefaultAssemblyResolver();
+            // res.AddSearchDirectory(Constants.EngineAssembliesPath);
+            // if (!Directory.Exists(Constants.ManualPatchingAssembliesPath))
+            //     Directory.CreateDirectory(Constants.ManualPatchingAssembliesPath);
+            // var dlls = Directory.GetFiles(Constants.WebGLAssembliesPath, "UnityEngine.XRModule.dll", SearchOption.AllDirectories);
+            // var assemblies = new HashSet<string>();
+            // foreach (var dll in dlls) assemblies.Add(dll);
+            // FodyAssemblyProcessor.ProcessAssemblies(assemblies, res);
             
             // Debug.Log("INITIALIZE ON LOAD");
             // // if(!InMemory)
