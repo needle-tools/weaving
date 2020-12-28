@@ -125,7 +125,7 @@ namespace Fody.Weavers.InputDeviceWeaver
 				{
 					Debug.Log("import " + mr);
 					// ModuleDefinition.ImportReference(replacementMethod);
-					ModuleDefinition.ImportReference(mr);
+					i.Operand = ModuleDefinition.ImportReference(mr);
 				}
 				processor.Append(i);
 				if (i.OpCode.FlowControl == FlowControl.Call)
