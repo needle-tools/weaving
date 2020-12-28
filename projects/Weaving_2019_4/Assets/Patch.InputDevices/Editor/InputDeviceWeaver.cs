@@ -114,27 +114,23 @@ namespace Fody.Weavers.InputDeviceWeaver
 			if (patchedMethod == null) throw new Exception("Missing patched method to apply");
 			var processor = method.Body.GetILProcessor();
 			
-			var info = Harmony.GetPatchInfo(patchedMethod).Prefixes.FirstOrDefault().PatchMethod;
+			var info = Harmony.GetPatchInfo(patchedMethod).Postfixes.FirstOrDefault().PatchMethod;
 			var _inst = info.GetInstructions();
 			var cecilInst = _inst.ToCecilInstruction();
 			processor.Clear();
 			for (var index = 0; index < cecilInst.Count; index++)
 			{
 				var i = cecilInst[index];
-				if (i.Operand is MethodReference mr)
-				{
-					Debug.Log("import " + mr);
-					// ModuleDefinition.ImportReference(replacementMethod);
+				if (i.Operand is MethodReference mr) 
 					i.Operand = ModuleDefinition.ImportReference(mr);
-				}
 				processor.Append(i);
-				if (i.OpCode.FlowControl == FlowControl.Call)
-				{
-					// ModuleDefinition.ImportReference(i.Operand);
-					var expected = Instruction.Create(OpCodes.Call, ModuleDefinition.ImportReference(replacementMethod));
-					Debug.Log("COMPARE: \n" + _inst[index] + " <- mono reflection\n" + i + " <- cur \n"  + expected + " <- expected \n");
-					Debug.Log("Mono.Reflection: " + _inst[index]);
-				}
+				// if (i.OpCode.FlowControl == FlowControl.Call)
+				// {
+				// 	// ModuleDefinition.ImportReference(i.Operand);
+				// 	var expected = Instruction.Create(OpCodes.Call, ModuleDefinition.ImportReference(replacementMethod));
+				// 	Debug.Log("COMPARE: \n" + _inst[index] + " <- mono reflection\n" + i + " <- cur \n"  + expected + " <- expected \n");
+				// 	Debug.Log("Mono.Reflection: " + _inst[index]);
+				// }
 			}
 
 			// patch.PatchMethod.GetInstructions().ToCecilInstruction(true)

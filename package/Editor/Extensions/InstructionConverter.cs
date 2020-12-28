@@ -12,7 +12,7 @@ namespace needle.Weaver
 {
 	public static class InstructionConverter
 	{
-		public static IList<Instruction> ToCecilInstruction(this IList<Mono.Reflection.Instruction> instructions, bool debug = true)
+		public static IList<Instruction> ToCecilInstruction(this IList<Mono.Reflection.Instruction> instructions, bool debug = false)
 		{
 			var list = new List<Instruction>(instructions.Count);
 			foreach (var inst in instructions)
@@ -145,7 +145,7 @@ namespace needle.Weaver
 				return arr;
 			}
 
-			if (instruction.Operand != null && instruction.Operand.GetType().FullName == "System.Reflection.MonoMethod")
+			if (instruction.Operand != null)
 			{
 				var type = instruction.Operand.GetType();
 				object GetProperty(string name)
@@ -157,12 +157,24 @@ namespace needle.Weaver
 					return type.GetMethod(name, (BindingFlags) ~0).Invoke(instruction.Operand, null);
 				}
 
-				var t = (Type) GetProperty("DeclaringType");
-				var method = (MethodInfo) GetMethod("GetBaseMethod");
-				var mod = ModuleDefinition.ReadModule(t.Assembly.Location);
-				var reference = mod.ImportReference(method);
-				mod.Dispose();
-				return reference;
+				
+				if(instruction.Operand.GetType().FullName == "System.Reflection.MonoMethod")
+				{
+					var t = (Type) GetProperty("DeclaringType");
+					var method = (MethodInfo) GetMethod("GetBaseMethod");
+					var mod = ModuleDefinition.ReadModule(t.Assembly.Location);
+					var reference = mod.ImportReference(method);
+					mod.Dispose();
+					return reference;
+				}
+				
+				if(instruction.Operand.GetType().FullName.EndsWith("LocalVariableInfo"))
+				{
+					Debug.Log("INFO " + instruction.Operand);
+					// VariableDefinition vd = new VariableDefinition()
+				}
+				
+				Debug.LogWarning(instruction.Operand);
 			}
 
 			// if(instruction.Operand != null)

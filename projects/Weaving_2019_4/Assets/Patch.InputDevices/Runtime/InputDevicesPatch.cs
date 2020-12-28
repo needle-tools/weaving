@@ -1,23 +1,35 @@
+using System;
 using System.Collections.Generic;
-using _Tests.Weaver_InputDevice;
-using HarmonyLib;
-using UnityEditor.Build;
-using UnityEditor.Build.Reporting;
 using UnityEngine;
 using UnityEngine.XR;
-using Instruction = Mono.Reflection.Instruction;
+
+#if UNITY_EDITOR
+using HarmonyLib;
+#endif
 
 namespace Fody.Weavers.InputDeviceWeaver
 {
+#if UNITY_EDITOR
 	[HarmonyPatch(typeof(InputDevices))]
+#endif
 	public class InputDevicesPatch// : IPreprocessBuildWithReport
-	{	
-		[HarmonyPrefix]
+	{
+		#if UNITY_EDITOR
+		[HarmonyPostfix]
 		[HarmonyPatch("GetDevices")]
-		private static bool GetDevices_Prefix(List<InputDevice> inputDevices)
+		#endif
+		private static void GetDevices_Postfix(List<InputDevice> inputDevices)
 		{
-			FakeInputDeviceAPI.FakeDeviceList(inputDevices);
-			return false;
+			inputDevices.Clear();
+			Debug.Log("Add devices");
+			// inputDevices.Add(new InputDevice());
+			// for (var i = 0; i < 10; i++)
+			// {
+			// 	if (Random.value > .8f)
+			// 		inputDevices.Add(dev);
+			// }
+			// FakeInputDeviceAPI.FakeDeviceList(inputDevices);
+			// return false;
 		}
 		
 		// [HarmonyPostfix]
