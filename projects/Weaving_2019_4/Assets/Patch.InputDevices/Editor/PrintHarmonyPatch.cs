@@ -13,7 +13,7 @@ using UnityEngine;
 
 namespace Fody.Weavers.InputDeviceWeaver
 {
-	public static class TestHarmonyPatchILConversion
+	public static class PrintHarmonyPatch
 	{
 		private static Harmony harmony = new Harmony("com.needle.inputDevices");
 		

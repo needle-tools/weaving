@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
-using _Tests.Weaver_InputDevice;
-using UnityEngine;
+using needle.Patch.InputDevices;
 using UnityEngine.XR;
 
 #if UNITY_EDITOR
@@ -25,7 +24,7 @@ namespace Fody.Weavers.InputDeviceWeaver
 			// 	if (Random.value > .8f)
 			// 		inputDevices.Add(dev);
 			// }
-			FakeInputDeviceAPI.FakeDeviceList(inputDevices);
+			MockInputDevices.GetDeviceList(inputDevices);
 			// return false;
 		}
 		

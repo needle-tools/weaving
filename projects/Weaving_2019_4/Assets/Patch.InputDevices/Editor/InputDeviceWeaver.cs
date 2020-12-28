@@ -2,12 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using _Tests.Weaver_InputDevice;
 using HarmonyLib;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
 using Mono.Reflection;
+using needle.Patch.InputDevices;
 using needle.Weaver;
 using UnityEngine;
 using UnityEngine.XR;
@@ -70,12 +70,8 @@ namespace Fody.Weavers.InputDeviceWeaver
 				if (mrt != null)
 				{
 					var rt = mrt.ReturnType;
-					// TODO: figure out how to add mscore lib to resolve rt.Resolve() to get TypeDefinition?!
-					// Debug.Log(rt.Name);
-					// TODO: figure out better way to get return types
 					var tempVar = new VariableDefinition(rt);
 					method.Body.Variables.Add(tempVar);
-					// Debug.Log("tempvar? " + tempVar.VariableType);
 					switch (rt.Name)
 					{
 						case "String":
@@ -175,7 +171,7 @@ namespace Fody.Weavers.InputDeviceWeaver
 		
 		public ModuleWeaver()
 		{
-			replacementMethod = typeof(FakeInputDeviceAPI)
+			replacementMethod = typeof(MockInputDevices)
 				.GetMethods((BindingFlags)~0)
 				.Where( x => x.Name == "FakeDeviceList")
 				.Single( x =>

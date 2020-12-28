@@ -5,12 +5,12 @@ using UnityEngine.XR;
 
 [assembly: Preserve]
 
-namespace _Tests.Weaver_InputDevice
+namespace needle.Patch.InputDevices
 {
 	// https://docs.unity3d.com/Manual/ManagedCodeStripping.html
-	public static class FakeInputDeviceAPI
+	public static class MockInputDevices
 	{
-		public static void FakeDeviceList(List<InputDevice> list)
+		public static void GetDeviceList(List<InputDevice> list)
 		{
 			Debug.Log("Add devices");
 			var dev = new InputDevice();
