@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using Editor.Attributes;
 using HarmonyLib;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
@@ -15,7 +16,16 @@ namespace Fody.Weavers.InputDeviceWeaver
 {
 	public static class PrintHarmonyPatch
 	{
-		private static Harmony harmony = new Harmony("com.needle.inputDevices");
+
+		[MenuItem(Constants.MenuItemBase + nameof(PrintNeedlePatchIL))]
+		public static void PrintNeedlePatchIL()
+		{
+			var methods = UnityEditor.TypeCache.GetMethodsWithAttribute<NeedlePatch>();
+			foreach (var method in methods)
+			{
+				method.GetInstructions().ToCecilInstruction(true);
+			}
+		}
 		
 		[MenuItem(Constants.MenuItemBase + nameof(PrintIL))]
 		public static void PrintIL()
