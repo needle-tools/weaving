@@ -8,8 +8,26 @@
 
 
 ### Known issues
+
 - WebGL builds throw runtime exception when building with ``C++ Compiler Configuration`` set to ``Debug``
 - ~~Can we use harmony to patch calls to some other assembly that uses types defined inside the assembly we're patching (e.g. using InputDevice in another assembly that we call leads to Linker Error at build time)~~
   - Not sure what resolved it but works now, maybe the Linker issue was not related
 - ~~Local variables are not yet working~~ 
   - the issue seems to be because of method signature mismatch -> I got the postfix from harmony and parsed IL for the postfix instead of the final method, so the variables and parameters did not match
+
+
+## Getting Started
+
+- Todo
+
+#### Weavers
+
+- Todo
+
+#### Patches
+
+- Todo
+
+#### Utility
+
+- Todo
