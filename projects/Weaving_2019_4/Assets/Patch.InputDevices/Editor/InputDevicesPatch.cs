@@ -10,15 +10,11 @@ using HarmonyLib;
 
 namespace Fody.Weavers.InputDeviceWeaver
 {
-#if UNITY_EDITOR
 	[HarmonyPatch(typeof(InputDevices))]
-#endif
 	public class InputDevicesPatch// : IPreprocessBuildWithReport
 	{
-		#if UNITY_EDITOR
 		[HarmonyPostfix]
 		[HarmonyPatch("GetDevices")]
-		#endif
 		private static void GetDevices_Postfix(List<InputDevice> inputDevices)
 		{
 			// inputDevices.Clear();
