@@ -23,7 +23,7 @@ namespace Fody.Weavers.InputDeviceWeaver
 			// can we call the default constructor if there is none?
 			// to research: if we try to declare "new InputDevice()" here building fails due to IL using "initobj" vs "newobj"
 			// __result = InputDevices.GetDeviceAtXRNode(node);
-			__result = new InputDevice();
+			// __result = new InputDevice();
 		}
 		
 		[HarmonyPostfix]
