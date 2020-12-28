@@ -8,8 +8,6 @@ using Fody;
 using Mono.Cecil;
 using Mono.Cecil.Pdb;
 using UnityEditor;
-using UnityEditor.Callbacks;
-using UnityEditor.Compilation;
 using UnityEngine;
 using Assembly = System.Reflection.Assembly;
 
@@ -18,7 +16,6 @@ namespace needle.Weaver
 {
     public static class FodyAssemblyProcessor
     {
-
         public static void CollectAndProcessAssemblies(bool inMemory, HashSet<string> allowedAssemblies)
         {
             Debug.Log("Fody processor running -------------------------------------------------------");
@@ -266,7 +263,7 @@ namespace needle.Weaver
 
                 try
                 {
-                    Debug.Log("<b>Execute " + weaver + "</b>");
+                    Debug.Log("<b>Execute " + weaver.WeaverInstance + "</b>");
                     weaver.Run("Execute");
                 }
                 catch (Exception e)

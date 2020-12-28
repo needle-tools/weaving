@@ -3,12 +3,9 @@ using UnityEngine;
 using UnityEngine.Scripting;
 using UnityEngine.XR;
 
-[assembly: Preserve]
-
 namespace needle.Patch.InputDevices
 {
-	// https://docs.unity3d.com/Manual/ManagedCodeStripping.html
-	public static class MockInputDevices
+	internal static class InputDevices
 	{
 		public static void GetDeviceList(List<InputDevice> list)
 		{

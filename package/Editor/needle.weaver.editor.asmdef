@@ -12,6 +12,12 @@
     "precompiledReferences": [],
     "autoReferenced": false,
     "defineConstraints": [],
-    "versionDefines": [],
+    "versionDefines": [
+        {
+            "name": "com.needle.editorpatching",
+            "expression": "",
+            "define": "EDITORPATCHING_INSTALLED"
+        }
+    ],
     "noEngineReferences": false
 }

@@ -6,6 +6,8 @@ namespace needle.Weaver
 {
 	public static class Constants
 	{
+		public const string MenuItemBase = "Tools/Weaving/";
+		
 		// assembly paths
 		public static string EditorInstallationPath => Path.GetDirectoryName(EditorApplication.applicationPath);
 		public static string EngineAssembliesPath => EditorInstallationPath + "/Data/Managed";

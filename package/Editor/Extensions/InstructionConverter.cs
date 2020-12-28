@@ -156,6 +156,7 @@ namespace needle.Weaver
 				
 				// TODO: cleanup this reflection
 				var type = instruction.Operand.GetType();
+				
 				object GetProperty(string name)
 				{
 					return type.GetProperty(name, (BindingFlags) ~0).GetValue(instruction.Operand);
@@ -177,10 +178,24 @@ namespace needle.Weaver
 					return reference;
 				}
 				
-				if(instruction.Operand.GetType().FullName.EndsWith("LocalVariableInfo"))
+				if(instruction.Operand is LocalVariableInfo lvi)
 				{
-					Debug.Log("INFO " + instruction.Operand);
-					// VariableDefinition vd = new VariableDefinition()
+					var lt = lvi.LocalType;
+					if (lt == null) throw new Exception("Could not get local type for " + instruction.Operand);
+					var mod = ModuleDefinition.ReadModule(lt.Assembly.Location);
+					var tr = new TypeReference(lt.Namespace, lt.Name, mod, mod);
+					var vd = new VariableDefinition(tr);
+					return vd;
+				}
+				
+				if(instruction.Operand.GetType().FullName == "System.RuntimeType")
+				{
+					var typeName = (string) instruction.Operand.GetType().GetProperty("AssemblyQualifiedName", (BindingFlags) ~0).GetValue(instruction.Operand);
+					var actualType = Type.GetType(typeName);
+					if (actualType == null) throw new Exception("Could not get type for " + instruction.Operand);
+					var mod = ModuleDefinition.ReadModule(actualType.Assembly.Location);
+					var tr = new TypeReference(actualType.Namespace, actualType.Name, mod, mod);
+					return tr;
 				}
 				
 				Debug.LogWarning(instruction.Operand);

@@ -1,33 +1,28 @@
-using System;
 using System.Collections.Generic;
-using needle.Patch.InputDevices;
 using UnityEngine.XR;
-
-#if UNITY_EDITOR
+using InputDevices = needle.Patch.InputDevices.InputDevices;
 using HarmonyLib;
-#endif
 
 namespace Fody.Weavers.InputDeviceWeaver
 {
-	[HarmonyPatch(typeof(InputDevices))]
-	public class InputDevicesPatch// : IPreprocessBuildWithReport
+	[HarmonyPatch(typeof(UnityEngine.XR.InputDevices))]
+	public class InputDevicesPatch
 	{
+
 		[HarmonyPostfix]
-		[HarmonyPatch("GetDevices")]
-		private static void GetDevices_Postfix(List<InputDevice> inputDevices)
+		[HarmonyPatch("GetDeviceAtXRNode")]
+		private static InputDevice GetDeviceAtXRNode(InputDevice device, XRNode node)
 		{
-			// inputDevices.Clear();
-			// Debug.Log("Add devices");
-			// inputDevices.Add(new InputDevice());
-			// for (var i = 0; i < 10; i++)
-			// {
-			// 	if (Random.value > .8f)
-			// 		inputDevices.Add(dev);
-			// }
-			MockInputDevices.GetDeviceList(inputDevices);
-			// return false;
+			return new InputDevice();
 		}
 		
+		[HarmonyPostfix]
+		[HarmonyPatch("GetDevices")]
+		private static void GetDevices(List<InputDevice> inputDevices)
+		{
+			InputDevices.GetDeviceList(inputDevices);
+		}
+
 		// [HarmonyPostfix]
 		// [HarmonyPatch("GetDevices")]
 		// private static void GetDevices_Postfix(List<InputDevice> inputDevices)
@@ -35,11 +30,5 @@ namespace Fody.Weavers.InputDeviceWeaver
 		// 	Debug.Log("POSTFIX");
 		// }
 
-		// public int callbackOrder => 1000;
-		// public void OnPreprocessBuild(BuildReport report)
-		// {
-		// 	TestHarmonyPatchILConversion.PrintIL();
-		// 	Debug.LogError("error to stop build");
-		// }
 	}
 }

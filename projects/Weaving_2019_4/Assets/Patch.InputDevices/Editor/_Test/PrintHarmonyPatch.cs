@@ -17,7 +17,7 @@ namespace Fody.Weavers.InputDeviceWeaver
 	{
 		private static Harmony harmony = new Harmony("com.needle.inputDevices");
 		
-		[MenuItem("Weaving/" + nameof(PrintIL))]
+		[MenuItem(Constants.MenuItemBase + nameof(PrintIL))]
 		public static void PrintIL()
 		{
 			// var opCodeConstructor = typeof(OpCode).GetConstructor((BindingFlags)~0, null, CallingConventions.Any, );
@@ -141,17 +141,6 @@ namespace Fody.Weavers.InputDeviceWeaver
 		// internal static readonly OpCode[] TwoBytesOpCode = new OpCode[31];
 		//
 		//
-		// // from https://github.com/jbevain/cecil/blob/master/Test/Mono.Cecil.Tests/Extensions.cs
-		// public static TypeDefinition ToDefinition (this Type self)
-		// {
-		// 	var module = ModuleDefinition.ReadModule (new MemoryStream (File.ReadAllBytes (self.Module.FullyQualifiedName)));
-		// 	return (TypeDefinition) module.LookupToken (self.MetadataToken);
-		// }
-		//
-		// public static MethodDefinition ToDefinition (this System.Reflection.MethodBase method)
-		// {
-		// 	var declaring_type = method.DeclaringType.ToDefinition ();
-		// 	return (MethodDefinition) declaring_type.Module.LookupToken (method.MetadataToken);
-		// }
+		
 	}
 }
