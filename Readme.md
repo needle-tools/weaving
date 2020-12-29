@@ -7,14 +7,16 @@
 - If we implement everything in a harmony patch the patch signature MUST match the method we patch exactly, otherwise we get a IL error at build time
 
 
-### Known issues
+### Issues
 
 - WebGL builds throw runtime exception when building with ``C++ Compiler Configuration`` set to ``Debug``
 - ~~Can we use harmony to patch calls to some other assembly that uses types defined inside the assembly we're patching (e.g. using InputDevice in another assembly that we call leads to Linker Error at build time)~~
   - Not sure what resolved it but works now, maybe the Linker issue was not related
 - ~~Local variables are not yet working~~ 
   - the issue seems to be because of method signature mismatch -> I got the postfix from harmony and parsed IL for the postfix instead of the final method, so the variables and parameters did not match
-
+- Applying harmony patch -> getting IL (CodeInstructions) from harmony -> converting to Cecil Instructions -> patching 
+  - results in reference to dll in which harmony patch is (e.g. a editor dll)
+  - when patching from runtime assembly we get a linker error (cyclic reference? XR.dll referencing Patch.dll referencing XR.dll?)
 
 ## Overview
 
