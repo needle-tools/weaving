@@ -27,7 +27,7 @@ namespace _Tests.Weaver_InputDevice
             if (Text)
             {
                 Text.text = $"Found {list.Count} InputDevices";
-                Text.text += "\n Has Head device... " + headDevice.isValid;
+                Text.text += "\n Has Head device... " + headDevice.name + " = " + headDevice.isValid;
             }
             Debug.Log("InputDevices: " + list.Count + "\n" + string.Join("\n", list.Select(e =>
             {

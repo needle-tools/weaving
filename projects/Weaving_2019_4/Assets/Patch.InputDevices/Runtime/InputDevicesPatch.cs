@@ -1,10 +1,12 @@
 using System.Collections.Generic;
 using needle.Weaver;
+using UnityEngine;
 using UnityEngine.XR;
 using InputDevices = needle.Patch.InputDevices.InputDevices;
 
 namespace needle.Weavers.InputDevicesPatch
 {
+	[NeedlePatch]
 	public class InputDevicesPatch
 	{
 		[NeedlePatch("UnityEngine.XR.InputDevices")]
@@ -27,9 +29,25 @@ namespace needle.Weavers.InputDevicesPatch
 		}
 	}
 
+	[NeedlePatch]
 	public class InputDevicePatch
 	{
+		private ulong m_DeviceId;
+		
 		[NeedlePatch("UnityEngine.XR.InputDevice")]
-		private static ulong deviceId() => 42;
+		private ulong deviceId
+		{
+			get
+			{
+				this.m_DeviceId = (ulong) (Random.value * 1000);
+				return this.m_DeviceId;
+			}
+		}
+		
+		[NeedlePatch("UnityEngine.XR.InputDevice")]
+		private bool isValid => true;
+		
+		[NeedlePatch("UnityEngine.XR.InputDevice")]
+		private string name() => "test";
 	}
 }

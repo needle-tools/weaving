@@ -8,12 +8,13 @@ using Mono.Cecil.Rocks;
 using Mono.Reflection;
 using UnityEngine;
 using Instruction = Mono.Cecil.Cil.Instruction;
+using ParameterAttributes = Mono.Cecil.ParameterAttributes;
 
 namespace needle.Weaver
 {
 	public static class InstructionWriter
 	{
-		public static bool Write(this MethodDefinition method, MethodInfo patch, bool debugLog = false)
+		public static bool Write(this MethodDefinition method, MemberInfo patch, bool debugLog = false)
 		{
 			var il = string.Empty;
 
@@ -39,10 +40,14 @@ namespace needle.Weaver
 					var methodFullName = pm.DeclaringType.FullName + "." + pm.Name;
 					if (methodFullName == patchFullName)
 					{
-						// var pm1 = pm.Resolve();
 						var module = method.Module;
 
-
+						// foreach (var param in method.Parameters) Debug.Log(param);
+						// if (!method.IsStatic)
+						// {	
+						// 	method.Parameters.Add(new ParameterDefinition("this", ParameterAttributes.None, new TypeReference(method.DeclaringType.Namespace, method.DeclaringType.Name, module, module)));
+						// }
+						
 						method.Body.Variables.Clear();
 						foreach(var v in pm.Body.Variables){
 							var nv = new VariableDefinition(module.ImportReference(v.VariableType));
@@ -80,39 +85,6 @@ namespace needle.Weaver
 
 						method.Body.Optimize();
 
-						// method.Body.Variables.Clear();
-						// foreach (var v in pm.Body.Variables)
-						// {
-						// 	var variable = module.ImportReference(v.VariableType);
-						// 	method.Body.Variables.Add(new VariableDefinition(variable));
-						// }
-						//
-						// method.Body = pm.Body;
-						// foreach (var e in method.Body.Instructions)
-						// {
-						// 	switch (e.Operand)
-						// 	{
-						// 		case FieldInfo fi:
-						// 			e.Operand = module.ImportReference(fi);
-						// 			break;
-						// 		case FieldReference fr:
-						// 			e.Operand = module.ImportReference(fr);
-						// 			break;
-						// 		case MethodBase mb:
-						// 			e.Operand = module.ImportReference(mb);
-						// 			break;
-						// 		case MethodReference mr:
-						// 			e.Operand = module.ImportReference(mr);
-						// 			break;
-						// 		case Type t: 
-						// 			e.Operand = module.ImportReference(t);
-						// 			break;
-						// 		case TypeReference tr:
-						// 			e.Operand = module.ImportReference(tr);
-						// 			break;
-						// 	}
-						// }
-
 						if (debugLog)
 						{
 							try
@@ -135,46 +107,11 @@ namespace needle.Weaver
 			}
 
 			return false;
-
-			var reflected = patch.GetInstructions();
-
-			if (debugLog)
-			{
-				try
-				{
-					il += "Reflected:\n" + string.Join("\n", reflected);
-				}
-				catch (Exception e)
-				{
-					Debug.LogWarning(e);
-				}
-			}
-
-			var instructions = reflected.ToCecilInstruction();
-			if (method.Write(instructions))
-			{
-				if (debugLog)
-				{
-					try
-					{
-						Debug.Log($"<b>Applied patch</b> to: {method.FullName} \n" +
-						          $"BEFORE: \n" +
-						          $"{il} \n\n" +
-						          $"AFTER: \n" +
-						          $"{method.CaptureILString()}");
-					}
-					catch (Exception e)
-					{
-						Debug.LogWarning(e);
-					}
-				}
-
-				return true;
-			}
-
-			return false;
 		}
+		
+		// reference https://en.wikipedia.org/wiki/List_of_CIL_instructions
 
+		[Obsolete("call with method to patch for now")]
 		public static bool Write(this MethodDefinition method, IEnumerable<Instruction> instructions)
 		{
 			if (method == null) return false;

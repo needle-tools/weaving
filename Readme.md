@@ -18,6 +18,7 @@ To modify an assembly create a new class deriving from ``BaseModuleWeaver``. Wea
 ## Technical Details
 
 ### ToDos
+- Menu item to restore all modified assemblies from backup
 - ~~Merge multiple patches (prefix, postfix etc)
   - Issue with harmony is it outputs a dynamic method - there seems to be no way to get the body of a dynamic method (Mono.Reflection throws exception when trying to access bytes for IL)
   - Possible solution: patch harmony or fork harmony and provide access to CodeInstruction array (or provide access to internal patch methods)~~
@@ -40,5 +41,6 @@ To modify an assembly create a new class deriving from ``BaseModuleWeaver``. Wea
 
 ### Gotchas
 
-- If we implement everything in a harmony patch the patch signature MUST match the method we patch exactly, otherwise we get a IL error at build time
+- Rider might pickup patched assemblies and show wrong suggestions / decompiler shows patched code instead of original
+- ~~If we implement everything in a harmony patch the patch signature MUST match the method we patch exactly, otherwise we get a IL error at build time~~ only true if we apply the patch method
 
