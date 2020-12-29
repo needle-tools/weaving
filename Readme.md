@@ -34,7 +34,9 @@ To modify an assembly create a new class deriving from ``BaseModuleWeaver``. Wea
 4) Applying harmony patch -> getting IL (CodeInstructions) from harmony -> converting to Cecil Instructions -> patching 
    - results in reference to dll in which harmony patch is (e.g. a editor dll)
      - this has to do with harmony not really embedding the patch IL but instead just calling the patch (e.g. your method marked with Prefix). Look e.g. in Harmony.MethodPatcher.AddPrefixes:645
-   - when patching from runtime assembly we get a linker error (cyclic reference? XR.dll referencing Patch.dll referencing XR.dll?)
+   - when patching from runtime assembly we get a linker error (cyclic reference? XR.dll referencing Patch.dll referencing XR.dll
+   - the method returned by Harmony.Patch is a dynamic method. By default it's not possible to get instructions from that.Also not using cecil apparently: https://stackoverflow.com/questions/2656987/dynamicmethod-in-cecil
+   - Possible solution to make it work? - internally harmony seems to use cecil as well, maybe we can intercept that process and get the cecil instructions when harmony is done
 
 ### Gotchas
 
