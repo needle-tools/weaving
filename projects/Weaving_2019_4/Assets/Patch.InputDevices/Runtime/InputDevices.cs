@@ -14,7 +14,7 @@ namespace needle.Patch.InputDevices
 		
 		public static void GetDeviceList(List<InputDevice> list)
 		{
-			Debug.Log("Add devices");
+			Debug.Log("Add devices " + Time.frameCount);
 			var dev = new InputDevice();
 			list.Add(dev);
 			for (var i = 0; i < 10; i++)

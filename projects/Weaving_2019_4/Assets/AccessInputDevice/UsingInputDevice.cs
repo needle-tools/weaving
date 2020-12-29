@@ -13,11 +13,6 @@ namespace _Tests.Weaver_InputDevice
     {
         public Text Text;
         
-        private void OnEnable()
-        {
-            PrintDeviceList();
-        }
-
         private void Update()
         {
             PrintDeviceList();

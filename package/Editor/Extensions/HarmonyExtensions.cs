@@ -1,54 +1,26 @@
 #if EDITORPATCHING_INSTALLED
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Reflection;
-using System.Reflection.Emit;
 using HarmonyLib;
 using Mono.Cecil;
-using Mono.Cecil.Cil;
-using Mono.Cecil.Rocks;
-using Mono.Collections.Generic;
-using Mono.Reflection;
-using UnityEngine;
-using UnityEngine.XR;
 using Instruction = Mono.Cecil.Cil.Instruction;
-using OpCode = Mono.Cecil.Cil.OpCode;
-using OpCodes = Mono.Cecil.Cil.OpCodes;
-using OpCodeType = Mono.Cecil.Cil.OpCodeType;
+
+// ReSharper disable SimplifyLinqExpressionUseAll
 
 
 namespace needle.Weaver
 {
 	public static class HarmonyExtensions
 	{
-		private static Harmony harmony = new Harmony("com.needle.weaver");
+		private static readonly Harmony harmony = new Harmony("com.needle.weaver");
 		
-		// https://stackoverflow.com/questions/940675/getting-a-delegate-from-methodinfo
-		public static Delegate CreateDelegate(this MethodInfo methodInfo, object target) {
-			Func<Type[], Type> getType;
-			var isAction = methodInfo.ReturnType.Equals((typeof(void)));
-			var types = methodInfo.GetParameters().Select(p => p.ParameterType);
-
-			if (isAction) {
-				getType = Expression.GetActionType;
-			}
-			else {
-				getType = Expression.GetFuncType;
-				types = types.Concat(new[] { methodInfo.ReturnType });
-			}
-
-			if (methodInfo.IsStatic) {
-				return Delegate.CreateDelegate(getType(types.ToArray()), methodInfo);
-			}
-
-			return Delegate.CreateDelegate(getType(types.ToArray()), target, methodInfo.Name);
-		}
-		
-		public static bool ApplyHarmonyPatches(this MethodDefinition method, ModuleDefinition module, Predicate<HarmonyLib.Patch> allowPatch = null)
+		public static bool ApplyHarmonyPatches(this MethodDefinition method, ModuleDefinition module)
 		{
+			if (!module.CustomAttributes.Any(c => c.GetType() == typeof(WeaveHarmony)) && !method.CustomAttributes.Any(c => c.GetType() == typeof(WeaveHarmony)))
+				return false;
+			
 			var patched = Harmony.GetAllPatchedMethods();
 			MethodBase originalMethod = null;
 			foreach (var m in patched)
@@ -85,69 +57,11 @@ namespace needle.Weaver
 			
 			harmony.Unpatch(originalMethod, HarmonyPatchType.All, harmony.Id);
 				
-			
-			var processor = method.Body.GetILProcessor();
-			
-			
-			
 			// TODO: support for merging patches (prefix + postfix) see bottom of file
 			// var patchedMethod = Harmony.GetPatchInfo(originalMethod).Postfixes.FirstOrDefault(p => allowPatch == null || allowPatch(p)).PatchMethod;
 			// var _inst = patchedMethod.GetInstructions();
 			var cecilInst = instructions.ToCecilInstruction(true);
-			processor.Clear();
-			method.Body.Variables.Clear();
-			for (var index = 0; index < cecilInst.Count; index++)
-			{
-				var i = cecilInst[index];
-				if (i.Operand is MethodReference mr) 
-					i.Operand = module.ImportReference(mr);
-				else if (i.Operand is VariableDefinition vd)
-				{
-					method.Body.Variables.Add(vd);
-					// i.Operand = module.ImportReference(vd.VariableType);
-				}
-				else if (i.Operand is TypeReference tr)
-					i.Operand = module.ImportReference(tr);
-				else if (i.Operand is LocalVariableInfo lvi)
-				{
-					if(method.HandleLocalVariableDefinition(processor, module, i, ref lvi))
-						continue;
-				}
-				else if (i.Operand is MethodBase mb)
-					i.Operand = module.ImportReference(mb);	
-				processor.Append(i);
-			}
-			
-
-			// resolve variable definition references (used by harmony)
-			foreach (var i in method.Body.Instructions)
-			{
-				bool isLoadOp() => i.OpCode == OpCodes.Ldarg || i.OpCode == OpCodes.Ldarg_0 || i.OpCode == OpCodes.Ldarg_1 || i.OpCode == OpCodes.Ldarg_2 ||
-				                   i.OpCode == OpCodes.Ldarg_3 || i.OpCode == OpCodes.Ldarga || i.OpCode == OpCodes.Ldarg_S || i.OpCode == OpCodes.Ldarga_S;
-				if (i.Operand is int number && isLoadOp())
-				{
-					var pr = new VariableDefinition(method.Parameters[number].ParameterType);
-					method.Body.Variables.Add(pr);
-					i.Operand = pr;
-				}
-			}
-			
-			return true;
-		}
-
-		public static bool HandleLocalVariableDefinition(this MethodDefinition method, ILProcessor processor, ModuleDefinition module, Instruction i, ref LocalVariableInfo operand)
-		{
-			var lt = operand.LocalType;
-			Debug.Log("Type is " + lt);
-			// TODO: move into InstructionConverter
-			var tr = new TypeReference(lt.Namespace, lt.Name, module, module);
-			var vd = new VariableDefinition(tr);
-			typeof(VariableReference).GetField("index", (BindingFlags)~0).SetValue(vd, operand.LocalIndex);
-			method.Body.Variables.Add(vd);
-			Debug.Log(tr + "\n" + vd + "\n" + vd.Index + "\n" + vd.IsPinned + "\n" + method.Body.HasVariables +"\n" + i.OpCode);
-			i.Operand = vd;
-			processor.Append(i);
-			return true;
+			return method.Write(cecilInst);
 		}
 
 		public static List<Instruction> ToCecilInstruction(this IEnumerable<CodeInstruction> instructions, bool debugLog = false)

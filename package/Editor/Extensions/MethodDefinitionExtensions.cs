@@ -10,6 +10,8 @@ namespace needle.Weaver
 {
 	public static class MethodDefinitionExtensions
 	{
+		// public static bool TryApplyPatches()
+		
 		public static bool AddExternalMethodBody(this MethodDefinition method)
 		{
 			if (method == null) return false;

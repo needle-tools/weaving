@@ -1,13 +1,7 @@
-using System;
-using System.IO;
 using System.Linq;
 using System.Reflection;
-using Editor.Attributes;
 using HarmonyLib;
-using Mono.Cecil;
-using Mono.Cecil.Cil;
 using Mono.Reflection;
-using needle.EditorPatching;
 using needle.Weaver;
 using UnityEditor;
 using UnityEngine;

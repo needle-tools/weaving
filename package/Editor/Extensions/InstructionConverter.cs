@@ -173,15 +173,15 @@ namespace needle.Weaver
 
 		private static object ToCecilOperand(this object _operand)
 		{
-			try
-			{
-				Debug.Log("Operand: " + _operand);
-				if (_operand != null && _operand is int n)
-				{
-					Debug.Log("NUMBER " + n);
-				}
-			}
-			catch { /*ignore */ }
+			// try
+			// {
+			// 	Debug.Log("Operand: " + _operand);
+			// 	if (_operand != null && _operand is int n)
+			// 	{
+			// 		Debug.Log("NUMBER " + n);
+			// 	}
+			// }
+			// catch { /*ignore */ }
 			
 			if (_operand is Mono.Reflection.Instruction inst)
 			{
@@ -204,9 +204,6 @@ namespace needle.Weaver
 				// for cecil to write the module we need to convert the operand data
 				// it expects internally types like IMetadataTokenProvider etc
 				// we can just read the assembly where the type is defined to get a MethodReference
-				// TODO: make local variables work
-				
-				
 				
 				// TODO: cleanup this reflection
 				var type = _operand.GetType();
@@ -219,7 +216,7 @@ namespace needle.Weaver
 				{
 					return type.GetProperty(name, (BindingFlags) ~0).GetValue(_operand);
 				}
-				object GetMethod(string name)
+				object GetMethod(string name) 
 				{
 					return type.GetMethod(name, (BindingFlags) ~0).Invoke(_operand, null);
 				}
@@ -248,53 +245,7 @@ namespace needle.Weaver
 					return tr;
 				}
 
-				// if (_operand is MemberInfo member)
-				// {
-				// 	Debug.Log(member.GetType());
-				// 	Debug.Log(_operand.GetType().GetProperty("ReflectedType", (BindingFlags)~0).GetValue(_operand));
-				// 	Debug.Log(_operand.GetType().BaseType.GetProperty("ReflectedTypeInternal", (BindingFlags)~0).GetValue(_operand));
-				// 	Debug.Log(typeof(MethodBase).GetProperty("FullName", (BindingFlags)~0).GetValue(_operand));
-				// 	var prop = member.GetType().GetProperty("AssemblyQualifiedName", (BindingFlags) ~0);
-				// 	var aqn = (string)prop.GetValue(member);
-				// 	var t = Type.GetType(aqn);
-				// 	var mod = ModuleDefinition.ReadModule(t.Assembly.Location);
-				// 	var reference = mod.ImportReference(t);
-				// 	mod.Dispose();
-				// 	return reference;
-				// }
-
-				string TryFindFullName(Type _type)
-				{
-					while (_type != null)
-					{
-						try
-						{
-							var prop = _type.GetProperty("FullName", (BindingFlags) ~0);
-							if(prop != null)
-								return (string) prop.GetValue(_operand);
-						}
-						catch
-						{
-							// ignored
-						}
-
-						_type = _type.BaseType;
-					}
-
-					return null;
-				}
 				
-				// if (type.FullName == "System.Reflection.MonoCMethod")
-				// {
-				// 	var fullName = TryFindFullName(type);
-				// 	Debug.Log(fullName);
-				// 	var t = Type.GetType(fullName);
-				// 	Debug.Log(t + ", " + t.Assembly);
-				// 	var mod = ModuleDefinition.ReadModule(t.Assembly.Location);
-				// 	var reference = mod.ImportReference(_operand as MethodBase);
-				// 	mod.Dispose();
-				// 	return _operand;
-				// }
 				
 				if(_operand is LocalVariableInfo lvi)
 				{
@@ -311,12 +262,56 @@ namespace needle.Weaver
 				
 			}
 			
-
-			// if(_operand != null)
-			// 	throw new Exception("Missing Operand conversion for " + instruction.Operand);
 			return _operand;
 		}
+		
+		// if (_operand is MemberInfo member)
+		// {
+		// 	Debug.Log(member.GetType());
+		// 	Debug.Log(_operand.GetType().GetProperty("ReflectedType", (BindingFlags)~0).GetValue(_operand));
+		// 	Debug.Log(_operand.GetType().BaseType.GetProperty("ReflectedTypeInternal", (BindingFlags)~0).GetValue(_operand));
+		// 	Debug.Log(typeof(MethodBase).GetProperty("FullName", (BindingFlags)~0).GetValue(_operand));
+		// 	var prop = member.GetType().GetProperty("AssemblyQualifiedName", (BindingFlags) ~0);
+		// 	var aqn = (string)prop.GetValue(member);
+		// 	var t = Type.GetType(aqn);
+		// 	var mod = ModuleDefinition.ReadModule(t.Assembly.Location);
+		// 	var reference = mod.ImportReference(t);
+		// 	mod.Dispose();
+		// 	return reference;
+		// }
 
+		// string TryFindFullName(Type _type)
+		// {
+		// 	while (_type != null)
+		// 	{
+		// 		try
+		// 		{
+		// 			var prop = _type.GetProperty("FullName", (BindingFlags) ~0);
+		// 			if(prop != null)
+		// 				return (string) prop.GetValue(_operand);
+		// 		}
+		// 		catch
+		// 		{
+		// 			// ignored
+		// 		}
+		//
+		// 		_type = _type.BaseType;
+		// 	}
+		//
+		// 	return null;
+		// }
+				
+		// if (type.FullName == "System.Reflection.MonoCMethod")
+		// {
+		// 	var fullName = TryFindFullName(type);
+		// 	Debug.Log(fullName);
+		// 	var t = Type.GetType(fullName);
+		// 	Debug.Log(t + ", " + t.Assembly);
+		// 	var mod = ModuleDefinition.ReadModule(t.Assembly.Location);
+		// 	var reference = mod.ImportReference(_operand as MethodBase);
+		// 	mod.Dispose();
+		// 	return _operand;
+		// }
 		// private static IReflectionImporter reflection_importer;
 		// internal static IReflectionImporter ReflectionImporter
 		// {

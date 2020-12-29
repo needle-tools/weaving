@@ -13,7 +13,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   enabledPatchIds:
-  - InputDevicesPatch_needle.EditorPatching.ManagedPatchIndependent
-  disabledPatchIds:
-  - AddFoldoutsToCameraInspector_needle.EditorPatching.ManagedPatchIndependent
   - needle.EditorPatching.DeepLinking
+  - InputDevicesPatch_needle.EditorPatching.ManagedPatchIndependent
+  - InputDevicesPatch
+  disabledPatchIds:
+  - MonoMethod
+  - System.Reflection.MonoMethod
+  - needle.EditorPatching.Samples.AddFoldoutsToCameraInspector
+  - Fody.Weavers.InputDeviceWeaver.InputDevicesPatch
