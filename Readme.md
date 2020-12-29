@@ -18,13 +18,13 @@ To modify an assembly create a new class deriving from ``BaseModuleWeaver``. Wea
 ## Technical Details
 
 ### ToDos
-- Menu item to restore all modified assemblies from backup
-- Make ``this`` work -> currently when using ``this`` in a patch the generated IL calls the member on the patch. Instead it should call the member on the patched type
-- ~~Merge multiple patches (prefix, postfix etc)
-  - Issue with harmony is it outputs a dynamic method - there seems to be no way to get the body of a dynamic method (Mono.Reflection throws exception when trying to access bytes for IL)
-  - Possible solution: patch harmony or fork harmony and provide access to CodeInstruction array (or provide access to internal patch methods)~~
+- [ ] Menu item to restore all modified assemblies from backup
+- [ ] Make ``this`` work -> currently when using ``this`` in a patch the generated IL calls the member on the patch. Instead it should call the member on the patched type
+- [x] ~~Merge multiple patches (prefix, postfix etc)~~
+  - ~~Issue with harmony is it outputs a dynamic method - there seems to be no way to get the body of a dynamic method (Mono.Reflection throws exception when trying to access bytes for IL)~~
+  - ~~Possible solution: patch harmony or fork harmony and provide access to CodeInstruction array (or provide access to internal patch methods)~~
      - see issues listed below at #4 -> best bet is to use custom attribute
-  - Alternative: **Use harmony for editor patching and custom attribute for runtime patching**
+  - **Alternative: Use harmony for editor patching and custom attribute for runtime patching**
 
 ### Issues
 
