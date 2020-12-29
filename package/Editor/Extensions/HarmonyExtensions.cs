@@ -15,6 +15,9 @@ using Mono.Reflection;
 using UnityEngine;
 using UnityEngine.XR;
 using Instruction = Mono.Cecil.Cil.Instruction;
+using OpCode = Mono.Cecil.Cil.OpCode;
+using OpCodes = Mono.Cecil.Cil.OpCodes;
+using OpCodeType = Mono.Cecil.Cil.OpCodeType;
 
 
 namespace needle.Weaver
@@ -115,18 +118,17 @@ namespace needle.Weaver
 				processor.Append(i);
 			}
 			
-			Debug.Log("---------");
-			Debug.Log(method.Body.HasVariables);
-			foreach(var var in method.Body.Variables)
-				Debug.Log(var);
 
 			// resolve variable definition references (used by harmony)
 			foreach (var i in method.Body.Instructions)
 			{
-				if (i.Operand is int number)
+				bool isLoadOp() => i.OpCode == OpCodes.Ldarg || i.OpCode == OpCodes.Ldarg_0 || i.OpCode == OpCodes.Ldarg_1 || i.OpCode == OpCodes.Ldarg_2 ||
+				                   i.OpCode == OpCodes.Ldarg_3 || i.OpCode == OpCodes.Ldarga || i.OpCode == OpCodes.Ldarg_S || i.OpCode == OpCodes.Ldarga_S;
+				if (i.Operand is int number && isLoadOp())
 				{
-					Debug.Log(i);
-					i.Operand = method.Body.Variables[number];
+					var pr = new VariableDefinition(method.Parameters[number].ParameterType);
+					method.Body.Variables.Add(pr);
+					i.Operand = pr;
 				}
 			}
 			
