@@ -3,41 +3,83 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Reflection.Emit;
 using System.Threading;
+using HarmonyLib;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+using NUnit.Framework;
 using UnityEngine;
+using FlowControl = Mono.Cecil.Cil.FlowControl;
+using OpCode = Mono.Cecil.Cil.OpCode;
+using OpCodeType = Mono.Cecil.Cil.OpCodeType;
+using OperandType = Mono.Cecil.Cil.OperandType;
+using StackBehaviour = Mono.Cecil.Cil.StackBehaviour;
 
 namespace needle.Weaver
 {
 	public static class InstructionConverter
 	{
-		public static IList<Instruction> ToCecilInstruction(this IList<Mono.Reflection.Instruction> instructions, bool debug = false)
+		public static void TryLog(object prev, object now)
+		{
+			try
+			{
+				Debug.Log(prev + " <-prev\n" + now + " <-now");
+			}
+			catch (Exception e)
+			{
+				Debug.LogWarning(e);
+			}
+		}
+		
+		public static IList<Instruction> ToCecilInstruction(this IList<Mono.Reflection.Instruction> instructions, bool debugLog = false)
 		{
 			var list = new List<Instruction>(instructions.Count);
 			foreach (var inst in instructions)
 			{
 				var conv = inst.ToCecilInstruction();
-				if(debug)
-					Debug.Log(inst + "\n" + conv);
+				if (debugLog)
+					TryLog(inst, conv);
 				list.Add(conv);
 			}
-			return list;
+
+			return list.ResolveLabels(debugLog);
 		}
-		
+
 		public static Instruction ToCecilInstruction(this Mono.Reflection.Instruction i)
 		{
+			return ToCecilInstruction(i.OpCode, i.Operand, i.Offset);
+		}
+
+		public static T ResolveLabels<T>(this T instructions, bool debugLog = false) where T : IList<Instruction>
+		{
+			for (var i = 0; i < instructions.Count; i++)
+			{
+				var inst = instructions[i];
+				if (inst.Operand is Label label)
+				{
+					var index = (int) label.GetType().GetField("label", (BindingFlags) ~0).GetValue(label);
+					inst.Operand = instructions[index];
+					if(debugLog)
+						Debug.Log(inst.OpCode.Name + " has Label with " + index + " pointing to " + inst.Operand);
+				}
+			}
+			return instructions;
+		}
+		
+		public static Instruction ToCecilInstruction(System.Reflection.Emit.OpCode _opcode, object _operand, int offset = 0)
+		{
 			// unpack and map
-			var op = i.OpCode;
-			var op1 = (byte) op1FieldInfo.Value.GetValue(i.OpCode);
-			var op2 = (byte) op2FieldInfo.Value.GetValue(i.OpCode);
+			var op = _opcode;
+			var op1 = (byte) op1FieldInfo.Value.GetValue(_opcode);
+			var op2 = (byte) op2FieldInfo.Value.GetValue(_opcode);
 			var flow = (byte) op.FlowControl.ToCecilFlowControl();
 			var opCodeType = (byte) op.OpCodeType.ToCecilOpCodeType();
 			var operandType = op.OperandType.ToCecilOperandType();
 			var pop = (byte) op.StackBehaviourPop.ToCecilStackBehaviour();
 			var push = (byte) op.StackBehaviourPush.ToCecilStackBehaviour();
 
-			var operand = i.ToCecilOperand();
+			var operand = _operand.ToCecilOperand();
 
 			// pack
 			var bytes = new[]
@@ -58,8 +100,7 @@ namespace needle.Weaver
 			var opcode = (OpCode) Activator.CreateInstance(typeof(OpCode), (BindingFlags) ~0, null, new object[] {i1, i2}, null, null);
 			var instruction = (Instruction) Activator.CreateInstance(typeof(Instruction), (BindingFlags) ~0, null,
 				new[] {opcode, operand}, null, null);
-			instruction.Offset = i.Offset;
-
+			instruction.Offset = offset;
 			// Debug.Log(i.OpCode.Name + " = " + opcode.Name + "\n" + i.OpCode.OpCodeType + " = " + opcode.OpCodeType);
 			return instruction;
 		}
@@ -100,7 +141,6 @@ namespace needle.Weaver
 				var cname = cecilNames[i];
 				if (cname == name)
 				{
-					// Debug.Log(cname + " == " + name);
 					return (Code) i;
 				}
 			}
@@ -131,14 +171,24 @@ namespace needle.Weaver
 		private static readonly Lazy<FieldInfo> op2FieldInfo =
 			new Lazy<FieldInfo>(() => typeof(System.Reflection.Emit.OpCode).GetField("op2", (BindingFlags) ~0));
 
-		public static object ToCecilOperand(this Mono.Reflection.Instruction instruction)
+		private static object ToCecilOperand(this object _operand)
 		{
-			if (instruction.Operand is Mono.Reflection.Instruction inst)
+			try
+			{
+				Debug.Log("Operand: " + _operand);
+				if (_operand != null && _operand is int n)
+				{
+					Debug.Log("NUMBER " + n);
+				}
+			}
+			catch { /*ignore */ }
+			
+			if (_operand is Mono.Reflection.Instruction inst)
 			{
 				return inst.ToCecilInstruction();
 			}
 
-			if (instruction.Operand is Mono.Reflection.Instruction[] instructions)
+			if (_operand is Mono.Reflection.Instruction[] instructions)
 			{
 				var arr = new Instruction[instructions.Length];
 				for (var i = 0; i < instructions.Length; i++)
@@ -147,7 +197,7 @@ namespace needle.Weaver
 			}
 
 			
-			if (instruction.Operand != null)
+			if (_operand != null)
 			{
 				// Debug.LogWarning(instruction.Operand);
 				
@@ -159,19 +209,23 @@ namespace needle.Weaver
 				
 				
 				// TODO: cleanup this reflection
-				var type = instruction.Operand.GetType();
+				var type = _operand.GetType();
 				
+				object GetField(string name)
+				{
+					return type.GetField(name, (BindingFlags) ~0).GetValue(_operand);
+				}
 				object GetProperty(string name)
 				{
-					return type.GetProperty(name, (BindingFlags) ~0).GetValue(instruction.Operand);
+					return type.GetProperty(name, (BindingFlags) ~0).GetValue(_operand);
 				}
 				object GetMethod(string name)
 				{
-					return type.GetMethod(name, (BindingFlags) ~0).Invoke(instruction.Operand, null);
+					return type.GetMethod(name, (BindingFlags) ~0).Invoke(_operand, null);
 				}
 
 				
-				if(instruction.Operand.GetType().FullName == "System.Reflection.MonoMethod")
+				if(type.FullName == "System.Reflection.MonoMethod")
 				{
 					var t = (Type) GetProperty("DeclaringType");
 					var method = (MethodInfo) GetMethod("GetBaseMethod");
@@ -182,10 +236,70 @@ namespace needle.Weaver
 					return reference;
 				}
 				
-				if(instruction.Operand is LocalVariableInfo lvi)
+				
+				if(_operand.GetType().FullName == "System.RuntimeType")
+				{
+					var typeName = (string) _operand.GetType().GetProperty("AssemblyQualifiedName", (BindingFlags) ~0).GetValue(_operand);
+					var actualType = Type.GetType(typeName);
+					if (actualType == null) throw new Exception("Could not get type for " + _operand);
+					var mod = ModuleDefinition.ReadModule(actualType.Assembly.Location);
+					var tr = new TypeReference(actualType.Namespace, actualType.Name, mod, mod);
+					mod.Dispose();
+					return tr;
+				}
+
+				// if (_operand is MemberInfo member)
+				// {
+				// 	Debug.Log(member.GetType());
+				// 	Debug.Log(_operand.GetType().GetProperty("ReflectedType", (BindingFlags)~0).GetValue(_operand));
+				// 	Debug.Log(_operand.GetType().BaseType.GetProperty("ReflectedTypeInternal", (BindingFlags)~0).GetValue(_operand));
+				// 	Debug.Log(typeof(MethodBase).GetProperty("FullName", (BindingFlags)~0).GetValue(_operand));
+				// 	var prop = member.GetType().GetProperty("AssemblyQualifiedName", (BindingFlags) ~0);
+				// 	var aqn = (string)prop.GetValue(member);
+				// 	var t = Type.GetType(aqn);
+				// 	var mod = ModuleDefinition.ReadModule(t.Assembly.Location);
+				// 	var reference = mod.ImportReference(t);
+				// 	mod.Dispose();
+				// 	return reference;
+				// }
+
+				string TryFindFullName(Type _type)
+				{
+					while (_type != null)
+					{
+						try
+						{
+							var prop = _type.GetProperty("FullName", (BindingFlags) ~0);
+							if(prop != null)
+								return (string) prop.GetValue(_operand);
+						}
+						catch
+						{
+							// ignored
+						}
+
+						_type = _type.BaseType;
+					}
+
+					return null;
+				}
+				
+				// if (type.FullName == "System.Reflection.MonoCMethod")
+				// {
+				// 	var fullName = TryFindFullName(type);
+				// 	Debug.Log(fullName);
+				// 	var t = Type.GetType(fullName);
+				// 	Debug.Log(t + ", " + t.Assembly);
+				// 	var mod = ModuleDefinition.ReadModule(t.Assembly.Location);
+				// 	var reference = mod.ImportReference(_operand as MethodBase);
+				// 	mod.Dispose();
+				// 	return _operand;
+				// }
+				
+				if(_operand is LocalVariableInfo lvi)
 				{
 					// var lt = lvi.LocalType;
-					// if (lt == null) throw new Exception("Could not get local type for " + instruction.Operand);
+					// if (lt == null) throw new Exception("Could not get local type for " + _operand);
 					// var mod = ModuleDefinition.ReadModule(lt.Assembly.Location);
 					// var tr = new TypeReference(lt.Namespace, lt.Name, mod, mod);
 					// var vd = new VariableDefinition(tr);
@@ -195,23 +309,12 @@ namespace needle.Weaver
 					return lvi;
 				}
 				
-				if(instruction.Operand.GetType().FullName == "System.RuntimeType")
-				{
-					var typeName = (string) instruction.Operand.GetType().GetProperty("AssemblyQualifiedName", (BindingFlags) ~0).GetValue(instruction.Operand);
-					var actualType = Type.GetType(typeName);
-					if (actualType == null) throw new Exception("Could not get type for " + instruction.Operand);
-					var mod = ModuleDefinition.ReadModule(actualType.Assembly.Location);
-					var tr = new TypeReference(actualType.Namespace, actualType.Name, mod, mod);
-					mod.Dispose();
-					return tr;
-				}
-				
 			}
 			
 
-			// if(instruction.Operand != null)
+			// if(_operand != null)
 			// 	throw new Exception("Missing Operand conversion for " + instruction.Operand);
-			return instruction.Operand;
+			return _operand;
 		}
 
 		// private static IReflectionImporter reflection_importer;

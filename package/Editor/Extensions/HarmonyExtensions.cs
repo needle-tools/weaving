@@ -66,6 +66,10 @@ namespace needle.Weaver
 			{
 				return _patches != null && _patches.Count > index ? new HarmonyMethod(_patches[index].PatchMethod) : null;
 			}
+
+			IEnumerable<CodeInstruction> instructions = null;
+			void OnReceiveInstructions(IEnumerable<CodeInstruction> inst) => instructions = inst;
+			PatchFunctions.HasFinalInstructions += OnReceiveInstructions;
 			
 			var patchedMethod = harmony.Patch(originalMethod, 
 				GetMethod(0, patches.Prefixes),
@@ -73,16 +77,11 @@ namespace needle.Weaver
 				GetMethod(0, patches.Transpilers),
 				GetMethod(0, patches.Finalizers)
 				);
-
-			// TODO: fork harmony and expose final instructions in MethodPatcher.CreateReplacement:84
-			patchedMethod = patchedMethod.CreateDelegate(originalMethod).GetMethodInfo();
-			// var proc = harmony.CreateProcessor(patchedMethod);
-			// foreach(var prefix in patches.Prefixes)
-			// 	proc.AddPrefix(harmony.CreateProcessor());
-			// proc.AddPostfix(postfix);
-			// proc.AddTranspiler(transpiler);
-			// proc.AddFinalizer(finalizer);
-			// var info = proc.Patch();
+			
+			PatchFunctions.HasFinalInstructions -= OnReceiveInstructions;
+			
+			harmony.Unpatch(originalMethod, HarmonyPatchType.All, harmony.Id);
+				
 			
 			var processor = method.Body.GetILProcessor();
 			
@@ -90,10 +89,10 @@ namespace needle.Weaver
 			
 			// TODO: support for merging patches (prefix + postfix) see bottom of file
 			// var patchedMethod = Harmony.GetPatchInfo(originalMethod).Postfixes.FirstOrDefault(p => allowPatch == null || allowPatch(p)).PatchMethod;
-			var _inst = patchedMethod.GetInstructions();
-			var cecilInst = _inst.ToCecilInstruction();
+			// var _inst = patchedMethod.GetInstructions();
+			var cecilInst = instructions.ToCecilInstruction(true);
 			processor.Clear();
-			// method.Body.Variables.Clear();
+			method.Body.Variables.Clear();
 			for (var index = 0; index < cecilInst.Count; index++)
 			{
 				var i = cecilInst[index];
@@ -102,17 +101,35 @@ namespace needle.Weaver
 				else if (i.Operand is VariableDefinition vd)
 				{
 					method.Body.Variables.Add(vd);
-					i.Operand = module.ImportReference(vd.VariableType);
+					// i.Operand = module.ImportReference(vd.VariableType);
 				}
 				else if (i.Operand is TypeReference tr)
 					i.Operand = module.ImportReference(tr);
 				else if (i.Operand is LocalVariableInfo lvi)
 				{
-					if(!method.HandleLocalVariableDefinition(processor, module, i, ref lvi))
+					if(method.HandleLocalVariableDefinition(processor, module, i, ref lvi))
 						continue;
 				}
+				else if (i.Operand is MethodBase mb)
+					i.Operand = module.ImportReference(mb);	
 				processor.Append(i);
 			}
+			
+			Debug.Log("---------");
+			Debug.Log(method.Body.HasVariables);
+			foreach(var var in method.Body.Variables)
+				Debug.Log(var);
+
+			// resolve variable definition references (used by harmony)
+			foreach (var i in method.Body.Instructions)
+			{
+				if (i.Operand is int number)
+				{
+					Debug.Log(i);
+					i.Operand = method.Body.Variables[number];
+				}
+			}
+			
 			return true;
 		}
 
@@ -126,13 +143,28 @@ namespace needle.Weaver
 			typeof(VariableReference).GetField("index", (BindingFlags)~0).SetValue(vd, operand.LocalIndex);
 			method.Body.Variables.Add(vd);
 			Debug.Log(tr + "\n" + vd + "\n" + vd.Index + "\n" + vd.IsPinned + "\n" + method.Body.HasVariables +"\n" + i.OpCode);
-			processor.Emit(i.OpCode, vd);
-			for (var index = 0; index < method.Body.Variables.Count; index++)
+			i.Operand = vd;
+			processor.Append(i);
+			return true;
+		}
+
+		public static List<Instruction> ToCecilInstruction(this IEnumerable<CodeInstruction> instructions, bool debugLog = false)
+		{
+			var list = new List<Instruction>();
+			foreach (var inst in instructions)
 			{
-				var var = method.Body.Variables[index];
-				Debug.Log("variable: " + index + ", " + var + " - " + var.Resolve() + " - " + var.VariableType);
+				var ci = inst.ToCecilInstruction();
+				if (debugLog)
+					InstructionConverter.TryLog(inst, ci);
+				list.Add(ci);
 			}
-			return false;
+
+			return list.ResolveLabels(debugLog);
+		}
+		
+		public static Instruction ToCecilInstruction(this CodeInstruction inst)
+		{
+			return InstructionConverter.ToCecilInstruction(inst.opcode, inst.operand);
 		}
 	}
 }
