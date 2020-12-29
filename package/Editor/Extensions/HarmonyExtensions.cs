@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using HarmonyLib;
 using Mono.Cecil;
+using UnityEngine;
 using Instruction = Mono.Cecil.Cil.Instruction;
 
 // ReSharper disable SimplifyLinqExpressionUseAll
@@ -42,26 +43,29 @@ namespace needle.Weaver
 				return _patches != null && _patches.Count > index ? new HarmonyMethod(_patches[index].PatchMethod) : null;
 			}
 
-			IEnumerable<CodeInstruction> instructions = null;
-			void OnReceiveInstructions(IEnumerable<CodeInstruction> inst) => instructions = inst;
-			PatchFunctions.HasFinalInstructions += OnReceiveInstructions;
+			Debug.LogWarning("no Harmony instructions access");
+			// IEnumerable<CodeInstruction> instructions = null;
+			// void OnReceiveInstructions(IEnumerable<CodeInstruction> inst) => instructions = inst;
+			// PatchFunctions.HasFinalInstructions += OnReceiveInstructions;
+			//
+			// var patchedMethod = harmony.Patch(originalMethod, 
+			// 	GetMethod(0, patches.Prefixes),
+			// 	GetMethod(0, patches.Postfixes),
+			// 	GetMethod(0, patches.Transpilers),
+			// 	GetMethod(0, patches.Finalizers)
+			// 	);
+			//
+			// PatchFunctions.HasFinalInstructions -= OnReceiveInstructions;
+			//
+			// harmony.Unpatch(originalMethod, HarmonyPatchType.All, harmony.Id);
+			// 	
+			// // TODO: support for merging patches (prefix + postfix) see bottom of file
+			// // var patchedMethod = Harmony.GetPatchInfo(originalMethod).Postfixes.FirstOrDefault(p => allowPatch == null || allowPatch(p)).PatchMethod;
+			// // var _inst = patchedMethod.GetInstructions();
+			// var cecilInst = instructions.ToCecilInstruction(true);
+			// return method.Write(cecilInst);
 			
-			var patchedMethod = harmony.Patch(originalMethod, 
-				GetMethod(0, patches.Prefixes),
-				GetMethod(0, patches.Postfixes),
-				GetMethod(0, patches.Transpilers),
-				GetMethod(0, patches.Finalizers)
-				);
-			
-			PatchFunctions.HasFinalInstructions -= OnReceiveInstructions;
-			
-			harmony.Unpatch(originalMethod, HarmonyPatchType.All, harmony.Id);
-				
-			// TODO: support for merging patches (prefix + postfix) see bottom of file
-			// var patchedMethod = Harmony.GetPatchInfo(originalMethod).Postfixes.FirstOrDefault(p => allowPatch == null || allowPatch(p)).PatchMethod;
-			// var _inst = patchedMethod.GetInstructions();
-			var cecilInst = instructions.ToCecilInstruction(true);
-			return method.Write(cecilInst);
+			return false;
 		}
 
 		public static List<Instruction> ToCecilInstruction(this IEnumerable<CodeInstruction> instructions, bool debugLog = false)
