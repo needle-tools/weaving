@@ -42,6 +42,6 @@ To modify an assembly create a new class deriving from ``BaseModuleWeaver``. Wea
 
 ### Gotchas
 
-- Rider might pickup patched assemblies and show wrong suggestions / decompiler shows patched code instead of original
+- Rider might pickup patched assemblies and show wrong suggestions / decompiler shows patched code instead of original. In that case try ``File/Invalidate caches and restart``
 - ~~If we implement everything in a harmony patch the patch signature MUST match the method we patch exactly, otherwise we get a IL error at build time~~ only true if we apply the patch method
 
