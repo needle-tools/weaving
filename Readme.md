@@ -24,7 +24,7 @@
 
 ### Weavers
 
-When wanting to modify an assembly create a new class deriving from ``BaseModuleWeaver``. Weavers are autodiscovered. Every weaver is called for every assembly that is requested to be modified. Use the ``ModuleDefinition`` field to get information about the current assembly and its types.
+To modify an assembly create a new class deriving from ``BaseModuleWeaver``. Weavers are autodiscovered. Every weaver is called for every assembly that is requested to be modified. Use the ``ModuleDefinition`` field to get information about the current assembly and its types.
 
 #### Editor Patches for weaving
 
