@@ -16,15 +16,15 @@
   - the issue seems to be because of method signature mismatch -> I got the postfix from harmony and parsed IL for the postfix instead of the final method, so the variables and parameters did not match
 
 
-## Getting Started
+## Overview
 
 - Todo
 
-#### Weavers
+### Weavers
 
-- Todo
+When wanting to modify an assembly create a new class deriving from ``BaseModuleWeaver``. Weavers are autodiscovered. Every weaver is called for every assembly that is requested to be modified. Use the ``ModuleDefinition`` field to get information about the current assembly and its types.
 
-#### Patches
+#### Editor Patches for weaving
 
 - Todo
 
