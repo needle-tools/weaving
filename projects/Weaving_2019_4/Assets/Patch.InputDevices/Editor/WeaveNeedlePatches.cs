@@ -58,6 +58,11 @@ namespace Patch.InputDevices.Editor
 					{
 						return patch;
 					}
+
+					if ((np.FullName + "." + patch.Name) == methodFullName)
+					{
+						return patch;
+					}
 				}
 			}
 

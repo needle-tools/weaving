@@ -7,7 +7,7 @@ namespace needle.Weaver
 {
 	internal static class MenuItems
 	{
-		[MenuItem(Constants.MenuItemBase + nameof(OpenFolders))]
+		[MenuItem(Constants.MenuItemBase + nameof(OpenFolders), priority = -1000)]
 		private static void OpenFolders()
 		{
 			EditorUtility.RevealInFinder(Constants.EngineAssembliesPath);
