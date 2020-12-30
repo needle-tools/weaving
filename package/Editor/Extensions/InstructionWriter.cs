@@ -256,7 +256,6 @@ namespace needle.Weaver
 			{
 				case Code.Stloc: // Pop a value from stack into local variable indx.
 					throw new NotImplementedException(current.ToString());
-					break;
 				case Code.Stloc_0:
 					if (method.Body.Variables.Count <= 0)
 					{
@@ -291,7 +290,6 @@ namespace needle.Weaver
 					break;
 				case Code.Stloc_S: // Pop a value from stack into local variable indx, short form.	
 					throw new NotImplementedException(current.ToString());
-					break;
 			}
 
 			stack = -1;
@@ -310,28 +308,20 @@ namespace needle.Weaver
 				{
 					case Code.Ldloc:
 						throw new NotImplementedException(current.ToString());
-						break;
 					case Code.Ldloc_0:
 						return method.Body.Variables[0].VariableType;
-						break;
 					case Code.Ldloc_1:
 						return method.Body.Variables[1].VariableType;
-						break;
 					case Code.Ldloc_2:
 						return method.Body.Variables[2].VariableType;
-						break;
 					case Code.Ldloc_3:
 						return method.Body.Variables[3].VariableType;
-						break;
 					case Code.Ldloca:
 						throw new NotImplementedException(current.ToString());
-						break;
 					case Code.Ldloc_S:
 						throw new NotImplementedException(current.ToString());
-						break;
 					case Code.Ldloca_S:
 						throw new NotImplementedException(current.ToString());
-						break;
 				}
 
 				current = current.Previous;
