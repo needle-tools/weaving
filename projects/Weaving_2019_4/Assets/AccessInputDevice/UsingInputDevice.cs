@@ -28,6 +28,10 @@ namespace _Tests.Weaver_InputDevice
             {
                 Text.text = $"Found {list.Count} InputDevices";
                 Text.text += "\n Has Head device... " + headDevice.name + " = " + headDevice.isValid;
+                var val = headDevice.TryGetFeatureValue(new InputFeatureUsage<float>("test"), out var res);
+                Text.text += "\n" + "float: " + res + " == " + val;
+                val = headDevice.TryGetFeatureValue(new InputFeatureUsage<Vector3>("test"), out var v3);
+                Text.text += "\n" + "vec3: " + v3 + " == " + val;
             }
             Debug.Log("InputDevices: " + list.Count + "\n" + string.Join("\n", list.Select(e =>
             {
