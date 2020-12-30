@@ -35,6 +35,7 @@ public class InputDevices_Patch
 ## Technical Details
 
 ### ToDos
+- [ ] Make something like prefix+postfix work (where we just add some code to the method)
 - [x] Make patching on base types work - for some reason they are not picked up or discarded
   - Issue was that the base type was defined in another assembly
   - [ ] add warning if patches are not applied to any method

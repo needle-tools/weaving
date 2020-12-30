@@ -46,7 +46,11 @@ namespace needle.Weaver
 			var patchFullName = patchType.FullName + "." + patch.Name;
 			using (var assembly = AssemblyDefinition.ReadAssembly(assemblyLocation))
 			{
+				var module = method.Module;
+				if (module == null) throw new Exception("Module is null " + method);
+				
 				var patchCandidates = assembly.MainModule.GetTypes().SelectMany(t => t.Methods);
+				
 				foreach (var pm in patchCandidates)
 				{
 					var methodFullName = pm.DeclaringType.FullName + "." + pm.Name;
@@ -55,7 +59,6 @@ namespace needle.Weaver
 						// TODO: ensure parameter and generics match 
 						if(!method.DoSignaturesMatch(pm)) continue;
 						
-						var module = method.Module;
 
 						// foreach (var param in method.Parameters) Debug.Log(param);
 						// if (!method.IsStatic)
@@ -64,9 +67,19 @@ namespace needle.Weaver
 						// }
 						
 						method.Body.Variables.Clear();
-						foreach(var v in pm.Body.Variables){
-							var nv = new VariableDefinition(module.ImportReference(v.VariableType));
-							method.Body.Variables.Add(nv);
+						foreach(var v in pm.Body.Variables)
+						{
+							if (v?.VariableType == null) throw new Exception("Variable or type is null: " + v + " / " + v?.VariableType);
+							try
+							{
+								var nv = new VariableDefinition(module.ImportReference(v.VariableType));
+								method.Body.Variables.Add(nv);
+							}
+							catch (Exception e)
+							{
+								Debug.LogError("Error adding variable " + v + " for " + method);
+								throw e;
+							}
 						}
 						
 						var ip = method.Body.GetILProcessor();

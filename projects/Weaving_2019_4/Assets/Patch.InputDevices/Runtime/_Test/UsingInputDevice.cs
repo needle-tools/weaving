@@ -21,8 +21,10 @@ namespace _Tests.Weaver_InputDevice
             device = new MockInputDevice("MyHeadset", XRNode.Head);
             device.SerialNumber = "0.0.42";
             device.Manufacturer = "Needle";
+            var start = Camera.main.transform.position;
             device.AddUsage(new InputFeatureUsage<float>("test"), () => Random.value);
             device.AddUsage(new InputFeatureUsage<Vector3>("test"), () => Random.insideUnitSphere);
+            device.AddUsage(new InputFeatureUsage<Vector3>("centerEyePosition"), () => start + Random.insideUnitSphere * .3f);
             device.DeviceCharacteristics = InputDeviceCharacteristics.TrackedDevice | InputDeviceCharacteristics.HeadMounted;
             XRInputSubsystem_Patch.RegisterInputDevice(device);
         }
@@ -58,6 +60,12 @@ namespace _Tests.Weaver_InputDevice
                     Text.text += "\n" + "internal tracking mode: " + (headDevice.subsystem as XRInputSubsystem_Patch)?._origin.ToString();
                     Text.text += "\n" + "last boundary event frame " + lastFrameReceivedEvent;
                 }
+
+
+                var subsystems = new List<ISubsystem>();
+                SubsystemManager.GetInstances(subsystems);
+                Text.text += "\nSubsystems?: " + subsystems.Count + "\n" + string.Join("\n", subsystems);
+
             }
             Debug.Log("InputDevices: " + list.Count + "\n" + string.Join("\n", list.Select(e =>
             {
