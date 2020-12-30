@@ -57,35 +57,4 @@ namespace needle.Weavers.InputDevicesPatch
 			deviceIds.Add((ulong) (Random.value * 100));
 		}
 	}
-
-	[NeedlePatch(typeof(IntegratedSubsystem))]
-	internal class IntegratedSubsystem_Patch : ISubsystem
-	{
-		internal IntPtr m_Ptr;
-		internal ISubsystemDescriptor m_subsystemDescriptor;
-		private bool isRunning;
-
-		public void Start()
-		{
-			isRunning = true;
-		}
-
-		public void Stop()
-		{
-			isRunning = false;
-		}
-
-		public void Destroy()
-		{
-		}
-
-		/// <summary>
-		///   <para>Whether or not the subsystem is running.</para>
-		/// </summary>
-		public bool running => this.valid && this.Internal_IsRunning();
-
-		internal bool valid => this.m_Ptr != IntPtr.Zero;
-
-		internal bool Internal_IsRunning() => isRunning;
-	}
 }

@@ -90,6 +90,7 @@ namespace Patch.InputDevices.Editor
 						foreach (var method in methods)
 						{
 							// constructors need a own NeedlePatch attribute
+							// TODO: only capture constructors that match exactly (constructors with argument and without are both captured currently)
 							if (method is ConstructorInfo && method.GetCustomAttribute<NeedlePatch>() == null)
 								continue;
 							
