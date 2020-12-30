@@ -7,7 +7,7 @@ namespace needle.Weavers.InputDevicesPatch
 {
 	// TODO / Backlog: we could remove [NeedlePatch] attributes completely and just patch everything that matches props and methods in the target class
 	
-	[NeedlePatch("UnityEngine.XR.InputDevices")]
+	[NeedlePatch(typeof(InputDevices))]
 	public class InputDevicesPatch
 	{
 		[NeedlePatch]
@@ -42,15 +42,24 @@ namespace needle.Weavers.InputDevicesPatch
 			string usage,
 			out float value)
 		{
-			value = 42;
+			value = deviceId;
 			return true;
 		}
 	}
 
-	[NeedlePatch("UnityEngine.XR.InputDevice")]
+	[NeedlePatch(typeof(InputDevice))]
 	public class InputDevicePatch
 	{
 		private ulong m_DeviceId;
+		private bool m_Initialized;
+		
+		// TODO: test if we can patch constructor
+		// [NeedlePatch]
+		// internal InputDevicePatch(ulong deviceId)
+		// {
+		// 	this.m_DeviceId = deviceId;
+		// 	this.m_Initialized = true;
+		// }
 
 		[NeedlePatch]
 		private ulong deviceId
@@ -77,5 +86,25 @@ namespace needle.Weavers.InputDevicesPatch
 			value = new Vector3(0, 1, 0);
 			return true;
 		}
+
+		private static XRInputSubsystem sub = new XRInputSubsystemPatch();
+		
+		[NeedlePatch]
+		public XRInputSubsystem subsystem => (XRInputSubsystem) sub;
+		// TODO: can we patch events eg from XRInputSubsystem so we can call them?
+	}
+
+	[NeedlePatch(typeof(XRInputSubsystem))]
+	public class XRInputSubsystemPatch : XRInputSubsystem
+	{
+		public TrackingOriginModeFlags _origin;
+
+		[NeedlePatch]
+		public new bool TrySetTrackingOriginMode(TrackingOriginModeFlags origin)
+		{
+			this._origin = origin;
+			return true;
+		}
+
 	}
 }

@@ -124,17 +124,17 @@ namespace needle.Weaver
 			switch (instruction.Operand)
 			{
 				case FieldInfo fi:
-					Debug.Log("FI: " + fi + "\n" + fi.DeclaringType);
+					// Debug.Log("FI: " + fi + "\n" + fi.DeclaringType);
 					break;
 				case FieldReference fr:
 					var dc = fr.DeclaringType;
-					Debug.Log("FIELD: " + fr + "\n" + dc + "\n" + dc.FullName);
+					// Debug.Log("FIELD: " + fr + "\n" + dc + "\n" + dc.FullName);
 					if (dc?.FullName == patch.DeclaringType?.FullName)
 					{
 						var possibleMatch = method.DeclaringType.Fields.FirstOrDefault(f => f.Name == fr.Name);
 						if (possibleMatch != null)
 						{
-							Debug.Log(possibleMatch);
+							// Debug.Log(possibleMatch);
 							instruction.Operand = possibleMatch;
 						}
 					}
@@ -150,7 +150,7 @@ namespace needle.Weaver
 						foreach(var possible in possibleMatches)
 						{
 							if (!mr.DoSignaturesMatch(possible)) continue;
-							Debug.Log("RESOLVED THIS METHOD REFERENCE: " + possible);
+							// Debug.Log("RESOLVED THIS METHOD REFERENCE: " + possible);
 							instruction.Operand = possible;
 							break;
 						}

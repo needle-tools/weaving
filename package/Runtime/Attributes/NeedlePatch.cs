@@ -23,6 +23,11 @@ namespace needle.Weaver
 			this.FullName = fullName;
 		}
 
+		public NeedlePatch(Type type)
+		{
+			this.FullName = type.FullName;
+		}
+
 		public void ResolveFullNameFromParentIfNull(Type parent, string selfName)
 		{
 			if (!string.IsNullOrEmpty(FullName)) return;
