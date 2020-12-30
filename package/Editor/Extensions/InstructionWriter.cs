@@ -66,14 +66,16 @@ namespace needle.Weaver
 						// 	method.Parameters.Add(new ParameterDefinition("this", ParameterAttributes.None, new TypeReference(method.DeclaringType.Namespace, method.DeclaringType.Name, module, module)));
 						// }
 						
-						method.GenericParameters.Clear();
+						
+						// method.GenericParameters.Clear();
 						foreach (var gv in pm.GenericParameters)
 						{
+							
 							try
 							{
 								// var t = gv.Resolve();
-								var tr = module.ImportReference(gv);
-								method.GenericParameters.Add(new GenericParameter(tr));
+								// var tr = module.ImportReference(gv);
+								// method.GenericParameters.Add(new GenericParameter(tr));
 							}
 							catch (Exception e)
 							{
@@ -82,20 +84,20 @@ namespace needle.Weaver
 							}
 						}
 						
-						method.Parameters.Clear();
-						foreach (var v in pm.Parameters)
-						{
-							try
-							{
-								var tr = module.ImportReference(v.ParameterType);
-								method.Parameters.Add(new ParameterDefinition(tr));
-							}
-							catch (Exception e)
-							{
-								Debug.LogError("Error adding generic variable " + v + " for " + method + "\n" + v?.ParameterType + "\n");
-								throw e;
-							}
-						}
+						// method.Parameters.Clear();
+						// foreach (var v in pm.Parameters)
+						// {
+						// 	try
+						// 	{
+						// 		var tr = module.ImportReference(v.ParameterType);
+						// 		method.Parameters.Add(new ParameterDefinition(tr));
+						// 	}
+						// 	catch (Exception e)
+						// 	{
+						// 		Debug.LogError("Error adding parameter " + v + " for " + method + "\n" + v?.ParameterType + "\n");
+						// 		throw e;
+						// 	}
+						// }
 
 						method.Body.Variables.Clear();
 						foreach(var v in pm.Body.Variables)
@@ -103,7 +105,10 @@ namespace needle.Weaver
 							if (v?.VariableType == null) throw new Exception("Variable or type is null: " + v + " / " + v?.VariableType);
 							try
 							{
-								var nv = new VariableDefinition(module.ImportReference(v.VariableType));
+								var type = v.VariableType;
+								type = type.ResolveGenericParameters(method);
+								
+								var nv = new VariableDefinition(module.ImportReference(type));
 								method.Body.Variables.Add(nv);
 							}
 							catch (Exception e)
@@ -134,6 +139,9 @@ namespace needle.Weaver
 								case MethodReference mr:
 									try
 									{
+										// var @ref = mr.DeclaringType?.ResolveGenericParameters(method);
+										// if(@ref != null)
+										// {var res = module.ImportReference(@ref);}
 										inst.Operand = module.ImportReference(mr);
 										ResolveReferencesToSelf(method, patch, inst);
 									}
