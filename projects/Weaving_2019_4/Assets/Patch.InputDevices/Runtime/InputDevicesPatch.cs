@@ -5,6 +5,8 @@ using UnityEngine.XR;
 
 namespace needle.Weavers.InputDevicesPatch
 {
+	// TODO / Backlog: we could remove [NeedlePatch] attributes completely and just patch everything that matches props and methods in the target class
+	
 	[NeedlePatch("UnityEngine.XR.InputDevices")]
 	public class InputDevicesPatch
 	{
