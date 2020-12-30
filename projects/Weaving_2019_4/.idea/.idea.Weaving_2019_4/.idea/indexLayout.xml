@@ -9,10 +9,13 @@
       <Path>Library/PackageCache/com.unity.ext.nunit@1.0.5</Path>
       <Path>Library/PackageCache/com.unity.ide.rider@3.0.3</Path>
       <Path>Library/PackageCache/com.unity.ide.vscode@1.2.3</Path>
+      <Path>Library/PackageCache/com.unity.inputsystem@1.0.0</Path>
       <Path>Library/PackageCache/com.unity.subsystemregistration@1.1.0</Path>
       <Path>Library/PackageCache/com.unity.test-framework@1.1.19</Path>
       <Path>Library/PackageCache/com.unity.textmeshpro@2.1.1</Path>
       <Path>Library/PackageCache/com.unity.timeline@1.2.16</Path>
+      <Path>Library/PackageCache/com.unity.xr.interaction.toolkit@1.0.0-pre.1</Path>
+      <Path>Library/PackageCache/com.unity.xr.legacyinputhelpers@2.1.6</Path>
       <Path>Packages</Path>
       <Path>ProjectSettings</Path>
     </explicitIncludes>

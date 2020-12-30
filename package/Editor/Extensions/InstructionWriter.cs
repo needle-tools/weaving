@@ -146,7 +146,7 @@ namespace needle.Weaver
 						var possibleMatch = method.DeclaringType.Fields.FirstOrDefault(f => f.Name == fr.Name);
 						if (possibleMatch != null)
 						{
-							Debug.Log("RESOLVED THIS FIELD REFERENCE TO: " + possibleMatch + "\n" + fr + "\n\n" + method + "\n\n");
+							// Debug.Log("RESOLVED THIS FIELD REFERENCE TO: " + possibleMatch + "\n" + fr + "\n\n" + method + "\n\n");
 							instruction.Operand = possibleMatch;
 						}
 					}
@@ -165,12 +165,12 @@ namespace needle.Weaver
 							foreach (var possible in possibleMatches)
 							{
 								if (!mr.DoSignaturesMatch(possible)) continue;
-								Debug.Log("RESOLVED THIS METHOD REFERENCE TO: " + possible + "\n" + mr + "\n\n" + method + "\n\n");
+								// Debug.Log("RESOLVED THIS METHOD REFERENCE TO: " + possible + "\n" + mr + "\n\n" + method + "\n\n");
 								instruction.Operand = possible;
 								break;
 							}
 						}
-						else Debug.Log("Skip display class reference " + mr + "\n" + method + "\n\n");
+						// else Debug.Log("Skip display class reference " + mr + "\n" + method + "\n\n");
 					}
 					break;
 				case Type t:

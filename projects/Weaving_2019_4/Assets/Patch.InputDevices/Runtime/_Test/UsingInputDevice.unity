@@ -282,8 +282,8 @@ MonoBehaviour:
     m_HorizontalOverflow: 1
     m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: "Frame=77\nFound 0 InputDevices\n Has Head device...  = False\nfloat: 0
-    == False\nvec3: (0.0, 0.0, 0.0) == False"
+  m_Text: "Frame=9\nFound 0 InputDevices\n Has Head device...  = False, \nfloat:
+    0 == False\nvec3: (0.0, 0.0, 0.0) == False"
 --- !u!222 &381583867
 CanvasRenderer:
   m_ObjectHideFlags: 0

@@ -18,10 +18,12 @@ namespace _Tests.Weaver_InputDevice
 
         private void Start()
         {
-            device = new MockInputDevice("MyInputDevice", XRNode.Head);
+            device = new MockInputDevice("MyHeadset", XRNode.Head);
+            device.SerialNumber = "0.0.42";
             device.Manufacturer = "Needle";
             device.AddUsage(new InputFeatureUsage<float>("test"), () => Random.value);
             device.AddUsage(new InputFeatureUsage<Vector3>("test"), () => Random.insideUnitSphere);
+            device.DeviceCharacteristics = InputDeviceCharacteristics.TrackedDevice | InputDeviceCharacteristics.HeadMounted;
             XRInputSubsystem_Patch.RegisterInputDevice(device);
         }
 
@@ -43,7 +45,7 @@ namespace _Tests.Weaver_InputDevice
             {
                 Text.text = "Frame=" + Time.frameCount;
                 Text.text += $"\nFound {list.Count} InputDevices";
-                Text.text += "\n Has Head device... " + headDevice.name + " = " + headDevice.isValid + ", " + headDevice.manufacturer;
+                Text.text += "\n Has Head device... " + headDevice.name + " = " + headDevice.isValid + ", " + headDevice.manufacturer + ", " + headDevice.serialNumber;
                 var val = headDevice.TryGetFeatureValue(new InputFeatureUsage<float>("test"), out var res);
                 Text.text += "\n" + "float: " + res + " == " + val;
                 val = headDevice.TryGetFeatureValue(new InputFeatureUsage<Vector3>("test"), out var v3);

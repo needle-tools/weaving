@@ -10,15 +10,18 @@ namespace needle.Weavers.InputDevicesPatch
 	{
 		public ulong Id { get; private set; }
 		public string Name { get; private set; }
-		
 		public string Manufacturer { get; set; }
+		public string SerialNumber { get; set; }
+		
 		public XRNode Node { get; set; }
+		public InputDeviceCharacteristics DeviceCharacteristics { get; set; }
 
 		private static ulong _idCounter;
 
 		public MockInputDevice(string name, XRNode node)
 		{
 			this.Id = _idCounter++;
+			this.Name = name;
 			this.Node = node;
 		}
 

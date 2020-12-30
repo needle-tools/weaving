@@ -45,6 +45,7 @@ namespace needle.Weavers.InputDevicesPatch
 
 		
 		// implementation:
+
 		internal uint GetIndex() => Index;
 		
 		internal void TryGetDeviceIds_AsList(List<ulong> deviceIds)
