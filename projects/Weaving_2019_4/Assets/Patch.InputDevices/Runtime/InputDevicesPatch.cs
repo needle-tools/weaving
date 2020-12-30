@@ -33,6 +33,15 @@ namespace needle.Weavers.InputDevicesPatch
 		{
 			return true;
 		}
+
+		internal static bool TryGetFeatureValue_float(
+			ulong deviceId,
+			string usage,
+			out float value)
+		{
+			value = 42;
+			return true;
+		}
 	}
 
 	[NeedlePatch("UnityEngine.XR.InputDevice")]
@@ -54,6 +63,16 @@ namespace needle.Weavers.InputDevicesPatch
 		private bool isValid => true;
 
 		[NeedlePatch]
+		private bool IsValidId() => true;
+
+		[NeedlePatch]
 		private string name => "test-" + deviceId;
+		
+		[NeedlePatch]
+		public bool TryGetFeatureValue(InputFeatureUsage<Vector3> usage, out Vector3 value)
+		{
+			value = new Vector3(0, 1, 0);
+			return true;
+		}
 	}
 }

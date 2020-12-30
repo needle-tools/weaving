@@ -40,6 +40,8 @@ namespace needle.Weaver
 					var methodFullName = pm.DeclaringType.FullName + "." + pm.Name;
 					if (methodFullName == patchFullName)
 					{
+						// TODO: ensure parameter and generics match 
+						
 						var module = method.Module;
 
 						// foreach (var param in method.Parameters) Debug.Log(param);
