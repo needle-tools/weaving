@@ -5,9 +5,11 @@
 
 To modify an assembly create a new class deriving from ``BaseModuleWeaver``. Weavers are autodiscovered. Every weaver is called for every assembly that is requested to be modified. Use the ``ModuleDefinition`` field to get information about the current assembly and its types.
 
-## Patching in Editor
+## Writing a patch for weaving
 
-- Todo
+Mark your patch with ``HarmonyPatch(<Type.To.Patch)>`` attribute. You can either pass in the type to patch directly or the FullName of that type (Namespace + TypeName).
+To patch members just implement them in your patch method with the exact same name and signature as defined in the type you want to patch. This works for methods, properties, events, constructors
+- Constructor patching: Currently it's necessary to add another ``[NeedlePatch]`` attribute to the patch constructor, otherwise constructors will not be patched
 
 ## Utilities
 
@@ -18,8 +20,10 @@ To modify an assembly create a new class deriving from ``BaseModuleWeaver``. Wea
 ## Technical Details
 
 ### ToDos
+- [ ] Make patching on base types work - for some reason they are not picked up or discarded
 - [ ] Menu item to restore all modified assemblies from backup
-- [ ] Make ``this`` work -> currently when using ``this`` in a patch the generated IL calls the member on the patch. Instead it should call the member on the patched type
+- [x] Make ``this`` work -> currently when using ``this`` in a patch the generated IL calls the member on the patch. Instead it should call the member on the patched type
+  - when there is a member with the same name and signature (parameters, constraints, type) that ``this`` refers to the call is redirected to that member instead of the member in the patch class
 - [x] ~~Merge multiple patches (prefix, postfix etc)~~
   - ~~Issue with harmony is it outputs a dynamic method - there seems to be no way to get the body of a dynamic method (Mono.Reflection throws exception when trying to access bytes for IL)~~
   - ~~Possible solution: patch harmony or fork harmony and provide access to CodeInstruction array (or provide access to internal patch methods)~~
