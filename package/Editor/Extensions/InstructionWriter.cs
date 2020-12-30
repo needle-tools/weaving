@@ -66,6 +66,37 @@ namespace needle.Weaver
 						// 	method.Parameters.Add(new ParameterDefinition("this", ParameterAttributes.None, new TypeReference(method.DeclaringType.Namespace, method.DeclaringType.Name, module, module)));
 						// }
 						
+						method.GenericParameters.Clear();
+						foreach (var gv in pm.GenericParameters)
+						{
+							try
+							{
+								// var t = gv.Resolve();
+								var tr = module.ImportReference(gv);
+								method.GenericParameters.Add(new GenericParameter(tr));
+							}
+							catch (Exception e)
+							{
+								Debug.LogError("Error adding generic variable " + gv + " for " + method + "\n" + gv?.Type + "\n" + pm.CaptureILString());
+								throw e;
+							}
+						}
+						
+						method.Parameters.Clear();
+						foreach (var v in pm.Parameters)
+						{
+							try
+							{
+								var tr = module.ImportReference(v.ParameterType);
+								method.Parameters.Add(new ParameterDefinition(tr));
+							}
+							catch (Exception e)
+							{
+								Debug.LogError("Error adding generic variable " + v + " for " + method + "\n" + v?.ParameterType + "\n");
+								throw e;
+							}
+						}
+
 						method.Body.Variables.Clear();
 						foreach(var v in pm.Body.Variables)
 						{
@@ -77,7 +108,7 @@ namespace needle.Weaver
 							}
 							catch (Exception e)
 							{
-								Debug.LogError("Error adding variable " + v + " for " + method);
+								Debug.LogError("Error adding variable " + v + " for " + method + "\nVariableType: " + v.VariableType + "\n");
 								throw e;
 							}
 						}
@@ -101,8 +132,16 @@ namespace needle.Weaver
 									ResolveReferencesToSelf(method, patch, inst);
 									break;
 								case MethodReference mr:
-									inst.Operand = module.ImportReference(mr);
-									ResolveReferencesToSelf(method, patch, inst);
+									try
+									{
+										inst.Operand = module.ImportReference(mr);
+										ResolveReferencesToSelf(method, patch, inst);
+									}
+									catch (Exception e)
+									{
+										Debug.LogError("Failed handling operand " + mr + "\n" + method);
+										throw e;
+									}
 									break;
 								case Type t:
 									inst.Operand = module.ImportReference(t);
