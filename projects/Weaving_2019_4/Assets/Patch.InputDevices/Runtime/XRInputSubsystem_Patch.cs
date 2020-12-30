@@ -33,7 +33,9 @@ namespace needle.Weavers.InputDevicesPatch
 
 		public static MockInputDevice TryGetDevice(ulong id) => InputDevices.FirstOrDefault(d => d.Id == id);
 		
-		internal List<Vector3> boundingBounds = new List<Vector3>()
+		
+		
+		public List<Vector3> Bounds = new List<Vector3>()
 		{
 			new Vector3(0, 0, 1),
 			new Vector3(1, 0, 1), 
@@ -53,8 +55,7 @@ namespace needle.Weavers.InputDevicesPatch
 
 		public bool TryRecenter()
 		{
-			Debug.LogError("recenter is not yet implemented");
-			return true;
+			return false;
 		}
 
 		public TrackingOriginModeFlags _origin;

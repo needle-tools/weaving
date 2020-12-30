@@ -5,6 +5,11 @@ namespace needle.Weaver
 {
 	public static class MethodReferenceExtensions
 	{
+		public static bool IsInDisplayClass(this MethodReference method)
+		{
+			return method.FullName.Contains("<>c__DisplayClass");
+		}
+		
 		public static bool DoSignaturesMatch(this MethodReference m0, MethodReference m1)
 		{
 			if (m0.ReturnType.FullName != m1.ReturnType.FullName)

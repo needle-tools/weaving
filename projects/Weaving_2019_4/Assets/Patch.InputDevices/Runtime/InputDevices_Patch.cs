@@ -10,11 +10,14 @@ namespace needle.Weavers.InputDevicesPatch
 	public class InputDevices_Patch
 	{
 		private static readonly List<InputDevice> _buffer = new List<InputDevice>();
+		private static IEnumerable<MockInputDevice> _inputDevices => XRInputSubsystem_Patch.InputDevices;
+
 		
 		private static InputDevice GetDeviceAtXRNode(XRNode node)
 		{
-			var mock = InputDevices.FirstOrDefault(d => d.Node == node);
-			if (mock == null || !XRInputSubsystem_Patch.Instance.TryGetInputDevices(_buffer)) return default;
+			var mock = _inputDevices.FirstOrDefault(d => d.Node == node);
+			if (mock == null || !XRInputSubsystem_Patch.Instance.TryGetInputDevices(_buffer)) 
+				return new InputDevice();
 			return _buffer.FirstOrDefault(d => d.name == mock?.Name);
 		}
 
@@ -25,14 +28,12 @@ namespace needle.Weavers.InputDevicesPatch
 
 		private static bool IsDeviceValid(ulong deviceId)
 		{
-			return InputDevices.Any(d => deviceId == d.Id);
+			return _inputDevices.Any(d => deviceId == d.Id);
 		}
 
 		internal static string GetDeviceName(ulong deviceId) => XRInputSubsystem_Patch.TryGetDevice(deviceId)?.Name;
 		
 		internal static string GetDeviceManufacturer(ulong deviceId) => XRInputSubsystem_Patch.TryGetDevice(deviceId)?.Manufacturer;
-
-		private static IEnumerable<MockInputDevice> InputDevices => XRInputSubsystem_Patch.InputDevices;
 
 
 
@@ -48,8 +49,8 @@ namespace needle.Weavers.InputDevicesPatch
 			string usage,
 			out bool value)
 		{
-			var dev = InputDevices.FirstOrDefault(d => d.Id == deviceId);
-			value = default;
+			var dev = _inputDevices.FirstOrDefault(d => d.Id == deviceId);
+			value = false;
 			return dev != null && dev.TryGetUsage(usage, out value);
 		}
 
@@ -58,8 +59,8 @@ namespace needle.Weavers.InputDevicesPatch
 			string usage,
 			out uint value)
 		{
-			var dev = InputDevices.FirstOrDefault(d => d.Id == deviceId);
-			value = default;
+			var dev = _inputDevices.FirstOrDefault(d => d.Id == deviceId);
+			value = uint.MaxValue;
 			return dev != null && dev.TryGetUsage(usage, out value);
 		}
 		
@@ -68,8 +69,8 @@ namespace needle.Weavers.InputDevicesPatch
 			string usage,
 			out float value)
 		{
-			var dev = InputDevices.FirstOrDefault(d => d.Id == deviceId);
-			value = default;
+			var dev = _inputDevices.FirstOrDefault(d => d.Id == deviceId);
+			value = float.MaxValue;
 			return dev != null && dev.TryGetUsage(usage, out value);
 		}
 
@@ -78,8 +79,8 @@ namespace needle.Weavers.InputDevicesPatch
 			string usage,
 			out Vector3 value)
 		{
-			var dev = InputDevices.FirstOrDefault(d => d.Id == deviceId);
-			value = default;
+			var dev = _inputDevices.FirstOrDefault(d => d.Id == deviceId);
+			value = Vector3.zero;
 			return dev != null && dev.TryGetUsage(usage, out value);
 		}
 
