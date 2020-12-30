@@ -16,8 +16,21 @@ namespace needle.Weaver
 	{
 		public static bool Write(this MethodDefinition method, MemberInfo patch, bool debugLog = false)
 		{
-			var il = string.Empty;
+			var patchType = patch.DeclaringType;
+			if (patchType == null)
+			{
+				Debug.LogError("No patch type for " + patch);
+				return false;
+			}
 
+			var assemblyLocation = patchType?.Assembly.Location;
+			if (string.IsNullOrEmpty(assemblyLocation))
+			{
+				Debug.LogError("No assembly location for " + patch);
+				return false;
+			}
+			
+			var il = string.Empty;
 			if (debugLog)
 			{
 				try
@@ -29,10 +42,9 @@ namespace needle.Weaver
 					Debug.LogWarning(e);
 				}
 			}
-
-			var patchType = patch.ReflectedType;
+			
 			var patchFullName = patchType.FullName + "." + patch.Name;
-			using (var assembly = AssemblyDefinition.ReadAssembly(patchType?.Assembly.Location))
+			using (var assembly = AssemblyDefinition.ReadAssembly(assemblyLocation))
 			{
 				var patchCandidates = assembly.MainModule.GetTypes().SelectMany(t => t.Methods);
 				foreach (var pm in patchCandidates)

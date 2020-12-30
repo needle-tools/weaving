@@ -19,6 +19,9 @@ namespace _Tests.Weaver_InputDevice
             PrintDeviceList();
         }
 
+        private int lastFrameReceivedEvent;
+
+
         [ContextMenu(nameof(PrintDeviceList))]
         private void PrintDeviceList()
         {
@@ -27,7 +30,8 @@ namespace _Tests.Weaver_InputDevice
             var headDevice = InputDevices.GetDeviceAtXRNode(XRNode.Head);
             if (Text)
             {
-                Text.text = $"Found {list.Count} InputDevices";
+                Text.text = "Frame=" + Time.frameCount;
+                Text.text += $"Found {list.Count} InputDevices";
                 Text.text += "\n Has Head device... " + headDevice.name + " = " + headDevice.isValid;
                 var val = headDevice.TryGetFeatureValue(new InputFeatureUsage<float>("test"), out var res);
                 Text.text += "\n" + "float: " + res + " == " + val;
@@ -35,9 +39,11 @@ namespace _Tests.Weaver_InputDevice
                 Text.text += "\n" + "vec3: " + v3 + " == " + val;
                 if (headDevice.subsystem != null)
                 {
+                    headDevice.subsystem.boundaryChanged += b => lastFrameReceivedEvent = Time.frameCount;
                     var st = headDevice.subsystem.TrySetTrackingOriginMode(TrackingOriginModeFlags.Floor);
                     Text.text += "\n" + "set origin mode? " + st + ", subsystem is: " + headDevice.subsystem.GetType();
                     Text.text += "\n" + "internal tracking mode: " + (headDevice.subsystem as XRInputSubsystemPatch)?._origin.ToString();
+                    Text.text += "\n" + "last boundary event frame " + lastFrameReceivedEvent;
                 }
             }
             Debug.Log("InputDevices: " + list.Count + "\n" + string.Join("\n", list.Select(e =>
