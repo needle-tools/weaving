@@ -139,16 +139,18 @@ namespace needle.Weaver
 								case MethodReference mr:
 									try
 									{
+										var gpp =  mr.DoResolve();
 										// var @ref = mr.DeclaringType?.ResolveGenericParameters(method);
 										// if(@ref != null)
 										// {var res = module.ImportReference(@ref);}
-										inst.Operand = module.ImportReference(mr);
+										inst.Operand = module.ImportReference(mr, gpp);
 										ResolveReferencesToSelf(method, patch, inst);
 									}
 									catch (Exception e)
 									{
-										Debug.LogError("Failed handling operand " + mr + "\n" + method);
-										throw e;
+										Debug.LogException(e);
+										throw new Exception(e.Message + "\nFailed on operand " + mr + "\n" + method + "\nIsGeneric?: " + mr.IsGenericInstance +
+										                    "\nContainsGenericParam?" + mr.ContainsGenericParameter);
 									}
 									break;
 								case Type t:
