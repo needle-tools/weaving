@@ -11,6 +11,21 @@ Mark your patch with ``NeedlePatch(<Type.To.Patch)>`` attribute. You can either 
 To patch members just implement them in your patch method with the exact same name and signature as defined in the type you want to patch. This works for methods, properties, events, constructors
 - Constructor patching: Currently it's necessary to add another ``[NeedlePatch]`` attribute to the patch constructor, otherwise constructors will not be patched
 
+
+### Example
+For patching ``InputDevices.GetDeviceAtXRNode(XRNode)`` your patch would look like this:
+
+```csharp
+[NeedlePatch(typeof(InputDevices))]
+public class InputDevices_Patch
+{
+	private static InputDevice GetDeviceAtXRNode(XRNode node)
+	{
+		return new InputDevice();
+	}
+}
+```
+
 ## Utilities
 
 - Todo
