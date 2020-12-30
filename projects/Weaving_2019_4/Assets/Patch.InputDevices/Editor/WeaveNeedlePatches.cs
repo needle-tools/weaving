@@ -16,6 +16,8 @@ namespace Patch.InputDevices.Editor
 		{
 			// patch methods
 			var patches = TypeCache.GetMethodsWithAttribute<NeedlePatch>().ToList();
+			var failed = "";
+			var cnt = 0;
 			ModuleDefinition.ForEachMethod(def =>
 			{
 				var patch = TryGetPatch(def, patches);
@@ -23,9 +25,9 @@ namespace Patch.InputDevices.Editor
 				// Ensure the method has a body (if it's a external method)
 				def.AddExternalMethodBody();
 				// Apply patch
-				if(!def.Write(patch, true)) 
-					Debug.LogWarning("Failed patching " + def);
+				if (!def.Write(patch, true)) failed += (cnt++) + "Failed patching " + def + "\n";
 			});
+			Debug.LogWarning("Could not patch " + cnt + " methods\n" + failed);
 			
 			// patch properties
 			var propertyPatches = TypeCache.GetTypesWithAttribute<NeedlePatch>()
@@ -63,7 +65,7 @@ namespace Patch.InputDevices.Editor
 					np.ResolveFullNameFromParentIfNull(fn, patch.Name);
 
 					if (string.IsNullOrEmpty(np.FullName)) continue;
-					
+
 					if (np.FullName == methodFullName)
 					{
 						return patch;

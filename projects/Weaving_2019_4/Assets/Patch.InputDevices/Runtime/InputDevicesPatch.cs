@@ -36,6 +36,7 @@ namespace needle.Weavers.InputDevicesPatch
 			return true;
 		}
 
+		[NeedlePatch]
 		internal static bool TryGetFeatureValue_float(
 			ulong deviceId,
 			string usage,

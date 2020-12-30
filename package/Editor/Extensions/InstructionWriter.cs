@@ -34,13 +34,14 @@ namespace needle.Weaver
 			var patchFullName = patchType.FullName + "." + patch.Name;
 			using (var assembly = AssemblyDefinition.ReadAssembly(patchType?.Assembly.Location))
 			{
-				var methods = assembly.MainModule.GetTypes().SelectMany(t => t.Methods);
-				foreach (var pm in methods)
+				var patchCandidates = assembly.MainModule.GetTypes().SelectMany(t => t.Methods);
+				foreach (var pm in patchCandidates)
 				{
 					var methodFullName = pm.DeclaringType.FullName + "." + pm.Name;
 					if (methodFullName == patchFullName)
 					{
 						// TODO: ensure parameter and generics match 
+						if(!method.DoSignaturesMatch(pm)) continue;
 						
 						var module = method.Module;
 
@@ -116,7 +117,7 @@ namespace needle.Weaver
 
 			return false;
 		}
-
+		
 		private static void ResolveReferencesToSelf(MethodDefinition method, MemberInfo patch, Instruction instruction)
 		{
 			if (instruction.Operand == null) return;
@@ -144,21 +145,11 @@ namespace needle.Weaver
 					// Debug.Log("METHOD REFERENCE " + mr + "\nhas this? " + mr.HasThis);
 					if (mr.HasThis)
 					{
-						var possibleMatches = method.DeclaringType.Methods.Where(m => m.Name == mr.Name).Where(m => m.Parameters.Count == mr.Parameters.Count);
+						var possibleMatches = method.DeclaringType.Methods.Where(m => m.Name == mr.Name);
 						// TODO: make sure generic parameters are handled
 						foreach(var possible in possibleMatches)
 						{
-							var mismatch = false;
-							for (var index = 0; index < possible.Parameters.Count; index++)
-							{
-								var par = possible.Parameters[index];
-								if (mr.Parameters[index].ParameterType != par.ParameterType)
-								{
-									mismatch = true;
-									break;
-								}
-							}
-							if (mismatch) continue;
+							if (!mr.DoSignaturesMatch(possible)) continue;
 							Debug.Log("RESOLVED THIS METHOD REFERENCE: " + possible);
 							instruction.Operand = possible;
 							break;
