@@ -5,17 +5,17 @@ using UnityEngine.XR;
 
 namespace needle.Weavers.InputDevicesPatch
 {
-	[NeedlePatch]
+	[NeedlePatch("UnityEngine.XR.InputDevices")]
 	public class InputDevicesPatch
 	{
-		[NeedlePatch("UnityEngine.XR.InputDevices")]
+		[NeedlePatch]
 		private static InputDevice GetDeviceAtXRNode(XRNode node)
 		{
 			return new InputDevice();
 			// return InputDevices.GetDeviceAtXRNode(node);
 		}
 
-		[NeedlePatch("UnityEngine.XR.InputDevices")]
+		[NeedlePatch]
 		private static void GetDevices(List<InputDevice> inputDevices)
 		{
 			Debug.Log("Add devices " + Time.frameCount);
@@ -28,19 +28,19 @@ namespace needle.Weavers.InputDevicesPatch
 			}
 		}
 
-		[NeedlePatch("UnityEngine.XR.InputDevices")]
+		[NeedlePatch]
 		private static bool IsDeviceValid(ulong deviceId)
 		{
 			return true;
 		}
 	}
 
-	[NeedlePatch]
+	[NeedlePatch("UnityEngine.XR.InputDevice")]
 	public class InputDevicePatch
 	{
 		private ulong m_DeviceId;
 
-		[NeedlePatch("UnityEngine.XR.InputDevice")]
+		[NeedlePatch]
 		private ulong deviceId
 		{
 			get
@@ -50,10 +50,10 @@ namespace needle.Weavers.InputDevicesPatch
 			}
 		}
 
-		[NeedlePatch("UnityEngine.XR.InputDevice")]
+		[NeedlePatch]
 		private bool isValid => true;
 
-		[NeedlePatch("UnityEngine.XR.InputDevice")]
+		[NeedlePatch]
 		private string name => "test-" + deviceId;
 	}
 }

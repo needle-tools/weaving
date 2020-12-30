@@ -59,6 +59,11 @@ namespace Patch.InputDevices.Editor
 				if(nps == null) continue;
 				foreach (var np in nps)
 				{
+					var fn = patch.ReflectedType;
+					np.ResolveFullNameFromParentIfNull(fn, patch.Name);
+
+					if (string.IsNullOrEmpty(np.FullName)) continue;
+					
 					if (np.FullName == methodFullName)
 					{
 						return patch;
@@ -71,6 +76,7 @@ namespace Patch.InputDevices.Editor
 				}
 			}
 
+			// Debug.LogWarning("Did not find patch for " + entry);
 			return null;
 		}
 	}
