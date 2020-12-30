@@ -17,6 +17,9 @@ namespace Patch.InputDevices.Editor
 		{
 			// patch methods
 			var marked = TypeCache.GetTypesWithAttribute<NeedlePatch>();
+			
+			Debug.Log("Found " + marked.Count + " marked types \n" + string.Join("\n", marked));
+			
 			var failed = "";
 			var cnt = 0;
 

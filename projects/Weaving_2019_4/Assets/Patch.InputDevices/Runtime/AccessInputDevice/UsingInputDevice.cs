@@ -42,7 +42,7 @@ namespace _Tests.Weaver_InputDevice
                     headDevice.subsystem.boundaryChanged += b => lastFrameReceivedEvent = Time.frameCount;
                     var st = headDevice.subsystem.TrySetTrackingOriginMode(TrackingOriginModeFlags.Floor);
                     Text.text += "\n" + "set origin mode? " + st + ", subsystem is: " + headDevice.subsystem.GetType();
-                    Text.text += "\n" + "internal tracking mode: " + (headDevice.subsystem as XRInputSubsystemPatch)?._origin.ToString();
+                    Text.text += "\n" + "internal tracking mode: " + (headDevice.subsystem as XRInputSubsystem_Patch)?._origin.ToString();
                     Text.text += "\n" + "last boundary event frame " + lastFrameReceivedEvent;
                 }
             }
