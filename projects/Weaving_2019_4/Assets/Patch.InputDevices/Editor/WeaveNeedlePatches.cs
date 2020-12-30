@@ -17,8 +17,9 @@ namespace Patch.InputDevices.Editor
 		{
 			// patch methods
 			var marked = TypeCache.GetTypesWithAttribute<NeedlePatch>();
+			// TODO: warn if any typed marked with patch attribute was never used
 			
-			Debug.Log("Found " + marked.Count + " marked types \n" + string.Join("\n", marked));
+			Debug.Log("Found " + marked.Count + " marked types \n" + string.Join("\n", marked) + "\n");
 			
 			var failed = "";
 			var cnt = 0;
@@ -27,12 +28,17 @@ namespace Patch.InputDevices.Editor
 			ModuleDefinition.ForEachMethod(def =>
 			{
 				if (!def.IsConstructor) return;
-				var patch = TryFindPatchMember(def, constructors);
+				var res = TryFindPatchMember(def, constructors);
+				var patch = res.patch;
 				if (patch == null) return;
 				// Ensure the method has a body (if it's a external method)
 				def.AddExternalMethodBody();
 				// Apply patch
-				if (!def.Write(patch, true)) failed += (cnt++) + "Failed patching " + def + "\n";
+				if (!def.Write(patch, true))
+				{
+					failed += (cnt++) + "Failed patching " + def + "\n";
+					return;
+				}
 			});
 			if(cnt > 0)
 				Debug.LogWarning("Could not patch " + cnt + " methods\n" + failed);
@@ -40,7 +46,8 @@ namespace Patch.InputDevices.Editor
 			var methods = Resolve<MethodInfo>(marked);
 			ModuleDefinition.ForEachMethod(def =>
 			{
-				var patch = TryFindPatchMember(def, methods);
+				var res = TryFindPatchMember(def, methods);
+				var patch = res.patch;
 				if (patch == null) return;
 				// Ensure the method has a body (if it's a external method)
 				def.AddExternalMethodBody();
@@ -54,7 +61,8 @@ namespace Patch.InputDevices.Editor
 			var properties = Resolve<PropertyInfo>(marked);
 			ModuleDefinition.ForEachProperty(def =>
 			{
-				var patch = TryFindPatchMember(def, properties);
+				var res = TryFindPatchMember(def, properties);
+				var patch = res.patch;
 				if (patch == null) return;
 				// make sure property return type matches patch return type
 				if(patch.PropertyType.FullName == def.PropertyType.FullName)
@@ -73,10 +81,10 @@ namespace Patch.InputDevices.Editor
 		/// <summary>
 		/// get type names we want to patch - e.g. attribute [NeedlePatch(MyType)] on class: will return dict with { key:MyType, values:members of type T }
 		/// </summary>
-		private static Dictionary<NeedlePatch, List<T>> Resolve<T>(TypeCache.TypeCollection typesWithPatchAttribute) 
+		private static Dictionary<NeedlePatch, (List<T> types, bool used)> Resolve<T>(TypeCache.TypeCollection typesWithPatchAttribute) 
 			where T : MemberInfo
 		{
-			var res = new Dictionary<NeedlePatch, List<T>>();
+			var res = new Dictionary<NeedlePatch, (List<T>, bool)>();
 			foreach (var type in typesWithPatchAttribute)
 			{
 				var methods = TypeAccessHelper.GetMembers<T>(type, false);
@@ -96,8 +104,8 @@ namespace Patch.InputDevices.Editor
 							
 							// add member
 							if(!res.ContainsKey(np))
-								res.Add(np, new List<T>());
-							res[np].Add(method);
+								res.Add(np, (new List<T>(), false));
+							res[np].Item1.Add(method);
 						}
 					}
 				}
@@ -106,7 +114,7 @@ namespace Patch.InputDevices.Editor
 			return res;
 		}
 		
-		private static TMember TryFindPatchMember<TTarget, TMember>(TTarget target, Dictionary<NeedlePatch, List<TMember>> dict) 
+		private static (TMember patch, NeedlePatch attribute) TryFindPatchMember<TTarget, TMember>(TTarget target, Dictionary<NeedlePatch, (List<TMember> list, bool used)> dict) 
 			where TTarget : IMemberDefinition 
 			where TMember : MemberInfo
 		{
@@ -115,7 +123,7 @@ namespace Patch.InputDevices.Editor
 			{
 				// we baseName is the fullname of the class for the type we want to patch
 				var patch = kvp.Key;
-				var members = kvp.Value;
+				var members = kvp.Value.list;
 				
 				foreach (var member in members)
 				{
@@ -131,12 +139,12 @@ namespace Patch.InputDevices.Editor
 
 							if (np.FullName == entryFullName)
 							{
-								return member;
+								return (member, patch);
 							}
 
 							if (np.FullName + "." + member.Name == entryFullName)
 							{
-								return member;
+								return (member, patch);
 							}
 						}
 					}
@@ -144,14 +152,14 @@ namespace Patch.InputDevices.Editor
 					var name = patch.FullName + "." + member.Name;
 					if (name == entryFullName)
 					{
-						return member;
+						return (member, patch);
 					}
 
 				}
 			}
 
 			// Debug.LogWarning("Did not find patch for " + entry);
-			return null;
+			return default;
 		}
 	
 		

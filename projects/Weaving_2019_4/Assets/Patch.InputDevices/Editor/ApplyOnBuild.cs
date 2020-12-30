@@ -11,7 +11,7 @@ namespace Fody.Weavers.InputDeviceWeaver
 		public void OnPreprocessBuild(BuildReport report)
 		{
 			if(WeaverSettings.instance.PatchOnBuild)
-				Actions.WeaveWebGlInputDevices();
+				Actions.Weave_WebGL_Patches();
 		}
 	}
 }

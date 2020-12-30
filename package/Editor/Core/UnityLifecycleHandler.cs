@@ -89,7 +89,7 @@ namespace needle.Weaver
         {
             Debug.Log("COMPILATION FINISHED " + obj);
             if(!InMemory)
-                FodyAssemblyProcessor.CollectAndProcessAssemblies(false, DefaultAssemblies);
+                AssemblyWeaver.CollectAndProcessAssemblies(false, DefaultAssemblies);
         }
 
         private static void OnBeforeReload()
@@ -103,7 +103,7 @@ namespace needle.Weaver
         {
             Debug.Log("AFTER ASSEMBLY RELOAD");
             if(InMemory)
-                FodyAssemblyProcessor.CollectAndProcessAssemblies(true, DefaultAssemblies);
+                AssemblyWeaver.CollectAndProcessAssemblies(true, DefaultAssemblies);
         }
 	}
 }

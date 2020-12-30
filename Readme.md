@@ -35,7 +35,9 @@ public class InputDevices_Patch
 ## Technical Details
 
 ### ToDos
-- [ ] Make patching on base types work - for some reason they are not picked up or discarded
+- [x] Make patching on base types work - for some reason they are not picked up or discarded
+  - Issue was that the base type was defined in another assembly
+  - [ ] add warning if patches are not applied to any method
 - [ ] Menu item to restore all modified assemblies from backup
 - [x] Make ``this`` work -> currently when using ``this`` in a patch the generated IL calls the member on the patch. Instead it should call the member on the patched type
   - when there is a member with the same name and signature (parameters, constraints, type) that ``this`` refers to the call is redirected to that member instead of the member in the patch class

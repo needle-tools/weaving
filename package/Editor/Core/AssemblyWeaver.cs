@@ -14,7 +14,7 @@ using Assembly = System.Reflection.Assembly;
 
 namespace needle.Weaver
 {
-    public static class FodyAssemblyProcessor
+    public static class AssemblyWeaver
     {
         public static void CollectAndProcessAssemblies(bool inMemory, HashSet<string> allowedAssemblies)
         {
@@ -138,13 +138,11 @@ namespace needle.Weaver
             var fodyConfig = GetFodySettings();
             var weavers = InitializeWeavers(fodyConfig, assemblyResolver);
         
-            Debug.Log("assemblyPaths after filtering: " + assemblyPaths.Count);
+            Debug.Log(assemblyPaths.Count + " AssemblyPaths after filtering:\n" + string.Join("\n", assemblyPaths) + "\n");
 
             // Process any assemblies which need it
             foreach (var assemblyPath in assemblyPaths)
             {
-                Debug.Log("Path: " + assemblyPath);
-            
                 // mdbs have the naming convention myDll.dll.mdb whereas pdbs have myDll.pdb
                 var mdbPath = assemblyPath + ".mdb";
                 var pdbPath = assemblyPath.Substring(0, assemblyPath.Length - 3) + "pdb";
@@ -152,7 +150,6 @@ namespace needle.Weaver
                 // Figure out if there's an pdb/mdb to go with it
                 if (File.Exists(pdbPath))
                 {
-                    Debug.Log("Found pdb path: " + pdbPath);
                     readerParameters.ReadSymbols = true;
                     readerParameters.SymbolReaderProvider = new PdbReaderProvider();
                     writerParameters.WriteSymbols = true;
@@ -168,7 +165,6 @@ namespace needle.Weaver
                 // }
                 else
                 {
-                    Debug.Log("Found no debug symbols");
                     readerParameters.ReadSymbols = false;
                     readerParameters.SymbolReaderProvider = null;
                     writerParameters.WriteSymbols = false;
@@ -189,10 +185,8 @@ namespace needle.Weaver
 
                     // Read assembly
                     stream = LoadAssemblyForModule(assemblyPath);
-                    Debug.Log("Read module from stream");
                     module = ModuleDefinition.ReadModule(stream, readerParameters);
 
-                    Debug.Log("Prepare weavers");
                     PrepareWeaversForModule(weavers, module);
 
                     // Process it if it hasn't already
@@ -367,14 +361,14 @@ namespace needle.Weaver
             var projectWeavers = UnityEditor.TypeCache.GetTypesDerivedFrom<BaseModuleWeaver>();
             foreach(var weaver in projectWeavers)
             {
-                Debug.LogFormat("Added project weaver {0}", weaver);
+                // Debug.LogFormat("Added project weaver {0}", weaver);
                 var entry = new WeaverEntry();
                 entry.Activate(weaver);
                 SetProperties(entry,resolver);
                 weavers.Add(entry);
             }
 
-            Debug.Log($"Fody processor running for {weavers.Count} weavers \n{string.Join("\n", weavers.Select(w => w.PrettyName()))}");
+            Debug.Log($"Fody processor running for {weavers.Count} weavers \n{string.Join("\n", weavers.Select(w => w.PrettyName()))}" + "\n");
             return weavers;
         }
 
