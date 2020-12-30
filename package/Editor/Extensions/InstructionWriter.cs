@@ -62,21 +62,27 @@ namespace needle.Weaver
 							{
 								case FieldInfo fi:
 									inst.Operand = module.ImportReference(fi);
+									ResolveReferencesToSelf(method, patch, inst);
 									break;
 								case FieldReference fr:
 									inst.Operand = module.ImportReference(fr);
+									ResolveReferencesToSelf(method, patch, inst);
 									break;
 								case MethodBase mb:
 									inst.Operand = module.ImportReference(mb);
+									ResolveReferencesToSelf(method, patch, inst);
 									break;
 								case MethodReference mr:
 									inst.Operand = module.ImportReference(mr);
+									ResolveReferencesToSelf(method, patch, inst);
 									break;
 								case Type t:
 									inst.Operand = module.ImportReference(t);
+									ResolveReferencesToSelf(method, patch, inst);
 									break;
 								case TypeReference tr:
 									inst.Operand = module.ImportReference(tr);
+									ResolveReferencesToSelf(method, patch, inst);
 									break;
 							}
 
@@ -107,6 +113,61 @@ namespace needle.Weaver
 			}
 
 			return false;
+		}
+
+		private static void ResolveReferencesToSelf(MethodDefinition method, MemberInfo patch, Instruction instruction)
+		{
+			if (instruction.Operand == null) return;
+			switch (instruction.Operand)
+			{
+				case FieldInfo fi:
+					Debug.Log("FI: " + fi + "\n" + fi.DeclaringType);
+					break;
+				case FieldReference fr:
+					var dc = fr.DeclaringType;
+					Debug.Log("FIELD: " + fr + "\n" + dc + "\n" + dc.FullName);
+					if (dc?.FullName == patch.DeclaringType?.FullName)
+					{
+						var possibleMatch = method.DeclaringType.Fields.FirstOrDefault(f => f.Name == fr.Name);
+						if (possibleMatch != null)
+						{
+							Debug.Log(possibleMatch);
+							instruction.Operand = possibleMatch;
+						}
+					}
+					break;
+				case MethodBase mb:
+					break;
+				case MethodReference mr:
+					// Debug.Log("METHOD REFERENCE " + mr + "\nhas this? " + mr.HasThis);
+					if (mr.HasThis)
+					{
+						var possibleMatches = method.DeclaringType.Methods.Where(m => m.Name == mr.Name).Where(m => m.Parameters.Count == mr.Parameters.Count);
+						// TODO: make sure generic parameters are handled
+						foreach(var possible in possibleMatches)
+						{
+							var mismatch = false;
+							for (var index = 0; index < possible.Parameters.Count; index++)
+							{
+								var par = possible.Parameters[index];
+								if (mr.Parameters[index].ParameterType != par.ParameterType)
+								{
+									mismatch = true;
+									break;
+								}
+							}
+							if (mismatch) continue;
+							Debug.Log("RESOLVED THIS METHOD REFERENCE: " + possible);
+							instruction.Operand = possible;
+							break;
+						}
+					}
+					break;
+				case Type t:
+					break;
+				case TypeReference tr:
+					break;
+			}
 		}
 		
 		// reference https://en.wikipedia.org/wiki/List_of_CIL_instructions

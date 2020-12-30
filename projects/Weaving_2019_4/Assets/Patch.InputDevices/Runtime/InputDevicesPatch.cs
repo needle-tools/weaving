@@ -48,6 +48,6 @@ namespace needle.Weavers.InputDevicesPatch
 		private bool isValid => true;
 		
 		[NeedlePatch("UnityEngine.XR.InputDevice")]
-		private string name() => "test";
+		private string name => "test-" + deviceId;
 	}
 }
