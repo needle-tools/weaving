@@ -7,7 +7,7 @@ To modify an assembly create a new class deriving from ``BaseModuleWeaver``. Wea
 
 ## Writing a patch for weaving
 
-Mark your patch with ``HarmonyPatch(<Type.To.Patch)>`` attribute. You can either pass in the type to patch directly or the FullName of that type (Namespace + TypeName).
+Mark your patch with ``NeedlePatch(<Type.To.Patch)>`` attribute. You can either pass in the type to patch directly or the FullName of that type (Namespace + TypeName).
 To patch members just implement them in your patch method with the exact same name and signature as defined in the type you want to patch. This works for methods, properties, events, constructors
 - Constructor patching: Currently it's necessary to add another ``[NeedlePatch]`` attribute to the patch constructor, otherwise constructors will not be patched
 
