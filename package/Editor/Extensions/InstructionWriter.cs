@@ -106,6 +106,7 @@ namespace needle.Weaver
 							try
 							{
 								var type = v.VariableType;
+								// HACK
 								type = type.ResolveGenericParameters(method);
 								
 								var nv = new VariableDefinition(module.ImportReference(type));
@@ -139,11 +140,30 @@ namespace needle.Weaver
 								case MethodReference mr:
 									try
 									{
-										var gpp =  mr.DoResolve();
+										// if (mr.IsGenericInstance)
+										// {
+										// 	GenericInstanceType i = mr.DeclaringType.MakeGenericInstanceType((mr as GenericInstanceMethod).GenericArguments.ToArray());
+										// 	
+										// 	
+										// }
+										// var gpp =  mr.DoResolve();
 										// var @ref = mr.DeclaringType?.ResolveGenericParameters(method);
 										// if(@ref != null)
 										// {var res = module.ImportReference(@ref);}
-										inst.Operand = module.ImportReference(mr, gpp);
+
+										// var invokeMethodReferenceInstance = new GenericInstanceMethod(mr);
+										// invokeMethodReferenceInstance.GenericArguments.Add (new TypeReference("UnityEngine", "GetInstances", module, module));
+										
+										Debug.Log(pm.IsGenericInstance);
+										Debug.Log(mr.IsGenericInstance);
+										Debug.Log(mr.DeclaringType.IsGenericInstance);
+										
+										if (mr.DeclaringType.IsGenericInstance) {
+											var baseTypeInstance = (GenericInstanceType) mr.DeclaringType;
+											mr = mr.MakeGeneric (baseTypeInstance.GenericArguments.ToArray ());
+										}
+										
+										inst.Operand =  module.ImportReference(mr, mr);
 										ResolveReferencesToSelf(method, patch, inst);
 									}
 									catch (Exception e)

@@ -24,28 +24,29 @@ namespace Patch.InputDevices.Editor
 			var failed = "";
 			var cnt = 0;
 
-			var constructors = Resolve<ConstructorInfo>(marked);
-			ModuleDefinition.ForEachMethod(def =>
-			{
-				if (!def.IsConstructor) return;
-				var res = TryFindPatchMember(def, constructors);
-				var patch = res.patch;
-				if (patch == null) return;
-				// Ensure the method has a body (if it's a external method)
-				def.AddExternalMethodBody();
-				// Apply patch
-				if (!def.Write(patch, true))
-				{
-					failed += (cnt++) + "Failed patching " + def + "\n";
-					return;
-				}
-			});
-			if(cnt > 0)
-				Debug.LogWarning("Could not patch " + cnt + " methods\n" + failed);
+			// var constructors = Resolve<ConstructorInfo>(marked);
+			// ModuleDefinition.ForEachMethod(def =>
+			// {
+			// 	if (!def.IsConstructor) return;
+			// 	var res = TryFindPatchMember(def, constructors);
+			// 	var patch = res.patch;
+			// 	if (patch == null) return;
+			// 	// Ensure the method has a body (if it's a external method)
+			// 	def.AddExternalMethodBody();
+			// 	// Apply patch
+			// 	if (!def.Write(patch, true))
+			// 	{
+			// 		failed += (cnt++) + "Failed patching " + def + "\n";
+			// 		return;
+			// 	}
+			// });
+			// if(cnt > 0)
+			// 	Debug.LogWarning("Could not patch " + cnt + " methods\n" + failed);
 			
 			var methods = Resolve<MethodInfo>(marked);
 			ModuleDefinition.ForEachMethod(def =>
 			{
+				if (!def.Name.Contains("GetInstances")) return;
 				var res = TryFindPatchMember(def, methods);
 				var patch = res.patch;
 				if (patch == null) return;
@@ -58,19 +59,19 @@ namespace Patch.InputDevices.Editor
 				Debug.LogWarning("Could not patch " + cnt + " methods\n" + failed);
 			
 			// patch properties
-			var properties = Resolve<PropertyInfo>(marked);
-			ModuleDefinition.ForEachProperty(def =>
-			{
-				var res = TryFindPatchMember(def, properties);
-				var patch = res.patch;
-				if (patch == null) return;
-				// make sure property return type matches patch return type
-				if(patch.PropertyType.FullName == def.PropertyType.FullName)
-				{
-					if(!def.GetMethod.Write(patch.GetMethod, true))
-						Debug.LogWarning("Failed patching " + def);
-				}
-			});
+			// var properties = Resolve<PropertyInfo>(marked);
+			// ModuleDefinition.ForEachProperty(def =>
+			// {
+			// 	var res = TryFindPatchMember(def, properties);
+			// 	var patch = res.patch;
+			// 	if (patch == null) return;
+			// 	// make sure property return type matches patch return type
+			// 	if(patch.PropertyType.FullName == def.PropertyType.FullName)
+			// 	{
+			// 		if(!def.GetMethod.Write(patch.GetMethod, true))
+			// 			Debug.LogWarning("Failed patching " + def);
+			// 	}
+			// });
 		}
 
 		public override IEnumerable<string> GetAssembliesForScanning()
