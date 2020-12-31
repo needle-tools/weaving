@@ -154,14 +154,14 @@ namespace needle.Weaver
 										// var invokeMethodReferenceInstance = new GenericInstanceMethod(mr);
 										// invokeMethodReferenceInstance.GenericArguments.Add (new TypeReference("UnityEngine", "GetInstances", module, module));
 										
-										Debug.Log(pm.IsGenericInstance);
-										Debug.Log(mr.IsGenericInstance);
-										Debug.Log(mr.DeclaringType.IsGenericInstance);
-										
-										if (mr.DeclaringType.IsGenericInstance) {
-											var baseTypeInstance = (GenericInstanceType) mr.DeclaringType;
-											mr = mr.MakeGeneric (baseTypeInstance.GenericArguments.ToArray ());
-										}
+										// Debug.Log(pm.IsGenericInstance);
+										// Debug.Log(mr.IsGenericInstance);
+										// Debug.Log(mr.DeclaringType.IsGenericInstance);
+										//
+										// if (mr.DeclaringType.IsGenericInstance) {
+										// 	var baseTypeInstance = (GenericInstanceType) mr.DeclaringType;
+										// 	mr = mr.MakeGeneric (baseTypeInstance.GenericArguments.ToArray ());
+										// }
 										
 										inst.Operand =  module.ImportReference(mr);
 										ResolveReferencesToSelf(method, patch, inst);

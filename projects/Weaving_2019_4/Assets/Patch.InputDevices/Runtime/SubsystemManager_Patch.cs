@@ -7,12 +7,17 @@ namespace needle.Weavers.InputDevicesPatch
 	[NeedlePatch(typeof(SubsystemManager))]
 	public class SubsystemManager_Patch
 	{
-		public static void GetInstances<T>(List<T> instances) where T : ISubsystem
+		private static void InternalGetDevices(List<ISubsystem> instances)
 		{
 			instances.Clear();
-			if(XRInputSubsystem_Patch.Instance is T instance)
+			if(XRInputSubsystem_Patch.Instance is ISubsystem instance)
 				instances.Add(instance);
 			else Debug.LogError("Failed adding mock subsystem");
+		}
+		
+		public static void GetInstances<T>(List<T> instances) where T : ISubsystem
+		{
+			InternalGetDevices(instances as List<ISubsystem>);
 		}
 
 	}
