@@ -26,7 +26,7 @@ namespace needle.Weaver
 		public static MethodReference MakeGeneric (this MethodReference self, params TypeReference [] arguments)
 		{
 			var reference = new MethodReference(self.Name,self.ReturnType) {
-				DeclaringType = self.DeclaringType.MakeGenericType (arguments),
+				DeclaringType = self.DeclaringType,//.MakeGenericType (arguments),
 				HasThis = self.HasThis,
 				ExplicitThis = self.ExplicitThis,
 				CallingConvention = self.CallingConvention,

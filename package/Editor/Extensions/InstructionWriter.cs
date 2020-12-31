@@ -163,7 +163,7 @@ namespace needle.Weaver
 											mr = mr.MakeGeneric (baseTypeInstance.GenericArguments.ToArray ());
 										}
 										
-										inst.Operand =  module.ImportReference(mr, mr);
+										inst.Operand =  module.ImportReference(mr);
 										ResolveReferencesToSelf(method, patch, inst);
 									}
 									catch (Exception e)
