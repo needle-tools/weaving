@@ -12,7 +12,8 @@ namespace needle.Weavers.InputDevicesPatch
 			instances.Clear();
 			if(XRInputSubsystem_Patch.Instance is T instance)
 				instances.Add(instance);
-			else Debug.LogError("Failed adding mock subsystem");
+			else 
+				Debug.LogError("Failed adding mock subsystem");
 		}
 
 	}

@@ -210,6 +210,10 @@ namespace needle.Weaver
                 {
                     Debug.LogException(e);
                 }
+                catch (NotSupportedException e)
+                {
+                    Debug.LogError(e);
+                }
                 catch (Exception e)
                 {
                     Debug.LogWarning(e);

@@ -10,7 +10,7 @@ namespace needle.Weaver
 {
 	public static class ImportHelper
 	{
-		public static void ResolvePatchReferences(this MethodDefinition targetMethod, MethodDefinition patch)
+		public static void ResolvePatchReferences(this MethodDefinition targetMethod, MethodDefinition patch, ModuleDefinition module = null)
 		{
 			foreach (var inst in patch.Body.Instructions)
 			{
@@ -18,18 +18,19 @@ namespace needle.Weaver
 				if (op == null) continue;
 				if (op is MemberReference memberOperand)
 				{
-					inst.Operand = targetMethod.ResolveAndImportGenericMember(memberOperand);
+					inst.Operand = targetMethod.ResolveAndImportGenericMember(memberOperand, module);
 				}
 			}
 		}
 
-		public static MemberReference ResolveAndImportGenericMember(this MethodDefinition targetMethod, MemberReference sourceMember)
+		public static MemberReference ResolveAndImportGenericMember(this MethodDefinition targetMethod, MemberReference sourceMember, ModuleDefinition module = null)
 		{
 			if (sourceMember == null) return null;
 
-			var targetModule = targetMethod.Module;
+			var targetModule = module ?? targetMethod.Module;
+			if (targetModule == null) throw new Exception("Missing module for resolving: " + targetMethod);
 			
-			Log.Gray(sourceMember.GetType() + " -> " + sourceMember + ": " + sourceMember.ContainsGenericParameter);
+			Log.Gray(sourceMember.GetType() + " -> " + sourceMember);
 
 			var obj = sourceMember;
 			var declaringType = obj.DeclaringType;
@@ -38,7 +39,7 @@ namespace needle.Weaver
 				try
 				{
 					// var resolvedDeclaringType = (TypeReference) targetMethod.ResolveAndImportGenericMember(declaringType);
-					// Log.Gray(resolvedDeclaringType);
+					Log.Gray(declaringType);
 					var tr = new TypeReference(declaringType.Namespace, declaringType.Name, targetModule, targetModule);
 					obj.DeclaringType = targetModule.ImportReference(tr);
 				}
@@ -49,9 +50,13 @@ namespace needle.Weaver
 			}
 			switch (obj)
 			{
+				case GenericParameter gp:
+					sourceMember = targetModule.ImportReference(gp.Copy<TypeReference>(targetModule));
+					break;
+				
 				case GenericInstanceType git:
 					var gitCopy = new GenericInstanceType(git);
-					sourceMember = git.Copy(targetModule, gitCopy);
+					sourceMember = targetModule.ImportReference(git.Copy(targetModule, gitCopy));
 					break;
 				
 				case TypeDefinition td:
@@ -69,12 +74,21 @@ namespace needle.Weaver
 					sourceMember = new FieldDefinition(fd.Name, fd.Attributes, imported);
 					break;
 				case FieldReference fr:
-					var fieldReference = new FieldReference(fr.Name, fr.FieldType);
-					sourceMember = targetModule.ImportReference(fieldReference);
+					sourceMember = targetModule.ImportReference(new FieldReference(fr.Name, fr.FieldType));
 					break;
 				
 				case MethodDefinition md:
-					sourceMember = new MethodDefinition(md.Name, md.Attributes, md.ReturnType.Copy<TypeReference>(targetModule));
+					Debug.Log("METHOD DEF " + md);
+					// var rt = targetModule.ImportReference(md.ReturnType.Copy<TypeReference>(targetModule));
+					var copy = md.Copy(targetModule);
+					// sourceMember = methodReference;
+					// var bst = md.DeclaringType.BaseType;
+					// var copy = new MethodDefinition(md.Name, md.Attributes, methodReference.ReturnType);
+					// copy.DeclaringType = new TypeDefinition(md.DeclaringType.Name, md.DeclaringType.Name, md.DeclaringType.Attributes,
+					// 	targetModule.ImportReference(bst));
+					// copy.ResolvePatchReferences(md, md.Module);
+					// sourceMember = copy;
+					sourceMember = targetModule.ImportReference(copy);
 					break;
 				case MethodReference mr:
 					sourceMember = targetModule.ImportReference(mr.Copy(targetModule));
@@ -99,6 +113,19 @@ namespace needle.Weaver
 					var paramCopy = arg.Copy<TypeReference>(targetModule);
 					if (git_instance.GenericArguments.Count <= index) git_instance.GenericArguments.Add(paramCopy);
 					else git_instance.GenericArguments[index] = paramCopy;
+				}
+			}
+
+			if (tr.IsGenericParameter && tr is GenericParameter gp)
+			{
+				// if(!(instance is GenericParameter))
+				// 	instance = new GenericParameter(instance.Name, instance) as T;
+				var pInstance = gp;// instance as GenericParameter;
+				for (var index = 0; index < gp.Constraints.Count; index++)
+				{
+					var constraint = gp.Constraints[index];
+					if (pInstance.Constraints.Count <= index) pInstance.Constraints.Add(constraint);
+					else pInstance.Constraints[index] = constraint;
 				}
 			}
 
@@ -139,6 +166,12 @@ namespace needle.Weaver
 				var paramCopy = gn.Copy(targetModule, new GenericParameter(gn.Name, instance));
 				if (instance.GenericParameters.Count <= index) instance.GenericParameters.Add(paramCopy);
 				else instance.GenericParameters[index] = paramCopy;
+			}
+
+			if (instance.ReturnType != null)
+			{
+				var rf = instance.ReturnType.Copy<TypeReference>(targetModule);
+				instance.ReturnType = rf;
 			}
 			
 			return instance;

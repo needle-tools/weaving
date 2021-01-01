@@ -134,6 +134,9 @@ namespace needle.Weaver
 									case TypeDefinition td:
 										inst.Operand = new TypeDefinition(td.Namespace, td.Name, td.Attributes, module.ImportReference(td.BaseType));
 										break;
+									case GenericParameter gp:
+										// TODO
+										break;
 									case TypeReference tr:
 										inst.Operand = module.ImportReference(tr);
 										ResolveReferencesToSelf(method, patch, inst);
