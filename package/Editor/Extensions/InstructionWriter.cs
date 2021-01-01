@@ -58,7 +58,7 @@ namespace needle.Weaver
 					{
 						// TODO: ensure parameter and generics match 
 						if(!method.DoSignaturesMatch(patchMethod)) continue;
-						
+						Debug.Log("Start patching " + methodFullName);
 
 						// foreach (var param in method.Parameters) Debug.Log(param);
 						// if (!method.IsStatic)
@@ -125,64 +125,51 @@ namespace needle.Weaver
 						targetProcessor.Clear();
 						foreach (var inst in patchMethod.Body.Instructions)
 						{
-							switch (inst.Operand)
+							if (inst.Operand != null)
 							{
-								case FieldInfo fi:
-									inst.Operand = module.ImportReference(fi);
-									ResolveReferencesToSelf(method, patch, inst);
-									break;
-								case FieldReference fr:
-									inst.Operand = module.ImportReference(fr);
-									ResolveReferencesToSelf(method, patch, inst);
-									break;
-								case MethodBase mb:
-									inst.Operand = module.ImportReference(mb);
-									ResolveReferencesToSelf(method, patch, inst);
-									break;
-								case MethodReference mr:
-									try
-									{
-										// if (mr.IsGenericInstance)
-										// {
-										// 	GenericInstanceType i = mr.DeclaringType.MakeGenericInstanceType((mr as GenericInstanceMethod).GenericArguments.ToArray());
-										// 	
-										// 	
-										// }
-										// var gpp =  mr.DoResolve();
-										// var @ref = mr.DeclaringType?.ResolveGenericParameters(method);
-										// if(@ref != null)
-										// {var res = module.ImportReference(@ref);}
-
-										// var invokeMethodReferenceInstance = new GenericInstanceMethod(mr);
-										// invokeMethodReferenceInstance.GenericArguments.Add (new TypeReference("UnityEngine", "GetInstances", module, module));
-
-										
-										//
-										// if (mr.DeclaringType.IsGenericInstance) {
-										// 	var baseTypeInstance = (GenericInstanceType) mr.DeclaringType;
-										// 	mr = mr.MakeGeneric (baseTypeInstance.GenericArguments.ToArray ());
-										// }
-										
+								if(debugLog)
+									Log.Gray("Handle Operand " + inst.Operand.GetType() + " in " + inst);
+								switch (inst.Operand)
+								{
+									case TypeDefinition td:
+										inst.Operand = new TypeDefinition(td.Namespace, td.Name, td.Attributes, module.ImportReference(td.BaseType));
+										break;
+									case TypeReference tr:
+										inst.Operand = module.ImportReference(tr);
+										ResolveReferencesToSelf(method, patch, inst);
+										break;
+									case Type t:
+										inst.Operand = module.ImportReference(t);
+										ResolveReferencesToSelf(method, patch, inst);
+										break;
+									
+									case MethodDefinition md:
+										inst.Operand = new MethodDefinition(md.Name, md.Attributes, module.ImportReference(md.ReturnType));
+										ResolveReferencesToSelf(method, patch, inst);
+										break;
+									case MethodReference mr:
 										inst.Operand =  module.ImportReference(mr);
 										ResolveReferencesToSelf(method, patch, inst);
-									}
-									catch (Exception e)
-									{
-										Debug.LogException(e);
-										throw new Exception(e.Message + "\nFailed on operand " + mr + "\n" + method + "\nIsGeneric?: " + mr.IsGenericInstance +
-										                    "\nContainsGenericParam?" + mr.ContainsGenericParameter);
-									}
-									break;
-								case Type t:
-									inst.Operand = module.ImportReference(t);
-									ResolveReferencesToSelf(method, patch, inst);
-									break;
-								case TypeReference tr:
-									inst.Operand = module.ImportReference(tr);
-									ResolveReferencesToSelf(method, patch, inst);
-									break;
+										break;
+									case MethodBase mb:
+										inst.Operand = module.ImportReference(mb);
+										ResolveReferencesToSelf(method, patch, inst);
+										break;
+									
+									case FieldDefinition fd:
+										inst.Operand = new FieldDefinition(fd.Name, fd.Attributes, module.ImportReference(fd.FieldType));
+										break;
+									case FieldReference fr:
+										inst.Operand = module.ImportReference(fr);
+										ResolveReferencesToSelf(method, patch, inst);
+										break;
+									case FieldInfo fi:
+										inst.Operand = module.ImportReference(fi);
+										ResolveReferencesToSelf(method, patch, inst);
+										break;
+								}
 							}
-
+							
 							targetProcessor.Append(inst);
 						}
 

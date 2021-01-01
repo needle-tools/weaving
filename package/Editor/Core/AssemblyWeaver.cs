@@ -190,7 +190,6 @@ namespace needle.Weaver
                     PrepareWeaversForModule(weavers, module);
 
                     // Process it if it hasn't already
-                    Debug.Log("Processing " + Path.GetFileName(assemblyPath));
                     if (ProcessAssembly(assemblyPath, module, weavers))
                     {
                         var path = assemblyPath;
@@ -227,7 +226,6 @@ namespace needle.Weaver
         {
             if (!inMemory)
             {
-                Debug.Log("Read Assembly from file");
                 return new FileStream(assemblyPath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite);
             }
         
@@ -249,7 +247,7 @@ namespace needle.Weaver
                 return false;
             }
 
-            Debug.Log("Process assembly at " + assemblyPath);
+            Debug.Log("<b>Process assembly at " + assemblyPath + "</b> -----");
 
             foreach (var weaver in weavers)
             {

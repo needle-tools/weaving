@@ -31,7 +31,7 @@ namespace needle.Weavers.InputDevicesPatch
 		{
 			var mock = _inputDevices.FirstOrDefault(d => d.Node == node);
 			if (mock == null || !XRInputSubsystem_Patch.Instance.TryGetInputDevices(_buffer))
-				return new InputDevice();
+				return default;
 			return _buffer.FirstOrDefault(d => d.name == mock?.Name);
 		}
 
