@@ -10,7 +10,7 @@ namespace needle.Weavers.InputDevicesPatch
 	{	
 		public static void GetInstances<T>(List<T> instances) where T : ISubsystem
 		{
-			var mock = new MockInputDevice("test", XRNode.Head);
+			if(instances == null) return;
 			instances.Clear();
 			if(XRInputSubsystem_Patch.Instance is T instance)
 				instances.Add(instance);
