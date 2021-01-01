@@ -51,13 +51,13 @@ namespace needle.Weaver
 				
 				var patchCandidates = assembly.MainModule.GetTypes().SelectMany(t => t.Methods);
 				
-				foreach (var pm in patchCandidates)
+				foreach (var patchMethod in patchCandidates)
 				{
-					var methodFullName = pm.DeclaringType.FullName + "." + pm.Name;
+					var methodFullName = patchMethod.DeclaringType.FullName + "." + patchMethod.Name;
 					if (methodFullName == patchFullName)
 					{
 						// TODO: ensure parameter and generics match 
-						if(!method.DoSignaturesMatch(pm)) continue;
+						if(!method.DoSignaturesMatch(patchMethod)) continue;
 						
 
 						// foreach (var param in method.Parameters) Debug.Log(param);
@@ -68,7 +68,7 @@ namespace needle.Weaver
 						
 						
 						// method.GenericParameters.Clear();
-						foreach (var gv in pm.GenericParameters)
+						foreach (var gv in patchMethod.GenericParameters)
 						{
 							
 							try
@@ -79,7 +79,7 @@ namespace needle.Weaver
 							}
 							catch (Exception e)
 							{
-								Debug.LogError("Error adding generic variable " + gv + " for " + method + "\n" + gv?.Type + "\n" + pm.CaptureILString());
+								Debug.LogError("Error adding generic variable " + gv + " for " + method + "\n" + gv?.Type + "\n" + patchMethod.CaptureILString());
 								throw e;
 							}
 						}
@@ -100,7 +100,7 @@ namespace needle.Weaver
 						// }
 
 						method.Body.Variables.Clear();
-						foreach(var v in pm.Body.Variables)
+						foreach(var v in patchMethod.Body.Variables)
 						{
 							if (v?.VariableType == null) throw new Exception("Variable or type is null: " + v + " / " + v?.VariableType);
 							try
@@ -118,10 +118,12 @@ namespace needle.Weaver
 								throw e;
 							}
 						}
+
+						method.ResolvePatchReferences(patchMethod);
 						
-						var ip = method.Body.GetILProcessor();
-						ip.Clear();
-						foreach (var inst in pm.Body.Instructions)
+						var targetProcessor = method.Body.GetILProcessor();
+						targetProcessor.Clear();
+						foreach (var inst in patchMethod.Body.Instructions)
 						{
 							switch (inst.Operand)
 							{
@@ -153,10 +155,8 @@ namespace needle.Weaver
 
 										// var invokeMethodReferenceInstance = new GenericInstanceMethod(mr);
 										// invokeMethodReferenceInstance.GenericArguments.Add (new TypeReference("UnityEngine", "GetInstances", module, module));
+
 										
-										// Debug.Log(pm.IsGenericInstance);
-										// Debug.Log(mr.IsGenericInstance);
-										// Debug.Log(mr.DeclaringType.IsGenericInstance);
 										//
 										// if (mr.DeclaringType.IsGenericInstance) {
 										// 	var baseTypeInstance = (GenericInstanceType) mr.DeclaringType;
@@ -183,7 +183,7 @@ namespace needle.Weaver
 									break;
 							}
 
-							ip.Append(inst);
+							targetProcessor.Append(inst);
 						}
 
 						method.Body.Optimize();
