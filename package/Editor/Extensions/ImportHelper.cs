@@ -33,11 +33,19 @@ namespace needle.Weaver
 
 			var obj = sourceMember;
 			var declaringType = obj.DeclaringType;
-			if (declaringType != null)
+			if (declaringType != null && !(declaringType is TypeDefinition))
 			{
-				var resolvedDeclaringType = (TypeReference)targetMethod.ResolveAndImportGenericMember(declaringType);
-				Log.Gray(resolvedDeclaringType);
-				obj.DeclaringType = resolvedDeclaringType;
+				try
+				{
+					// var resolvedDeclaringType = (TypeReference) targetMethod.ResolveAndImportGenericMember(declaringType);
+					// Log.Gray(resolvedDeclaringType);
+					var tr = new TypeReference(declaringType.Namespace, declaringType.Name, targetModule, targetModule);
+					obj.DeclaringType = targetModule.ImportReference(tr);
+				}
+				catch (Exception io)
+				{
+					Debug.LogWarning("Set Declaring type " + declaringType + " -> " + io);
+				}
 			}
 			switch (obj)
 			{
@@ -51,21 +59,22 @@ namespace needle.Weaver
 					bt = targetModule.ImportReference(bt);
 					sourceMember = new TypeDefinition(td.Namespace, td.Name, td.Attributes, bt);
 					break;
+				case TypeReference tr:
+					sourceMember = targetModule.ImportReference(tr.Copy<TypeReference>(targetModule));
+					break;
+				
 				case FieldDefinition fd:
 					var typeReference = fd.FieldType.Copy<TypeReference>(targetModule);
 					var imported = targetModule.ImportReference(typeReference);
 					sourceMember = new FieldDefinition(fd.Name, fd.Attributes, imported);
 					break;
-				case MethodDefinition md:
-					sourceMember = new MethodDefinition(md.Name, md.Attributes, md.ReturnType.Copy<TypeReference>(targetModule));
-					break;
-				
-				case TypeReference tr:
-					sourceMember = targetModule.ImportReference(tr.Copy<TypeReference>(targetModule));
-					break;
 				case FieldReference fr:
 					var fieldReference = new FieldReference(fr.Name, fr.FieldType);
 					sourceMember = targetModule.ImportReference(fieldReference);
+					break;
+				
+				case MethodDefinition md:
+					sourceMember = new MethodDefinition(md.Name, md.Attributes, md.ReturnType.Copy<TypeReference>(targetModule));
 					break;
 				case MethodReference mr:
 					sourceMember = targetModule.ImportReference(mr.Copy(targetModule));

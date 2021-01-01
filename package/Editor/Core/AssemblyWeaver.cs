@@ -249,6 +249,8 @@ namespace needle.Weaver
 
             Debug.Log("<b>Process assembly at " + assemblyPath + "</b> -----");
 
+            weavers = weavers.OrderByDescending(w => w.Priority);
+
             foreach (var weaver in weavers)
             {
                 if (weaver.WeaverInstance == null) continue;
@@ -434,13 +436,14 @@ namespace needle.Weaver
             return Assembly.Load(rawAssembly);
         }
 
-        class WeaverEntry
+        public class WeaverEntry
         {
             public string AssemblyName;
             public string AssemblyPath;
             public string Element;
             public string TypeName;
             public Type WeaverType;
+            public int Priority;
 
             public object WeaverInstance;
 
@@ -474,6 +477,7 @@ namespace needle.Weaver
             {
                 WeaverType = weaverType;
                 WeaverInstance = Activator.CreateInstance(weaverType);
+                Priority = (WeaverInstance as IWithPriority)?.Priority ?? 0;
             }
 
             internal void Run(string methodName)

@@ -14,9 +14,9 @@ namespace needle.Weavers.InputDevicesPatch
 	[NeedlePatch(typeof(XRInputSubsystem))]
 	internal class XRInputSubsystem_Patch : XRInputSubsystem
 	{
-		// private static readonly Lazy<XRInputSubsystem_Patch> _instance = new Lazy<XRInputSubsystem_Patch>(() => new XRInputSubsystem_Patch());
-		private static XRInputSubsystem_Patch _instance = new XRInputSubsystem_Patch();
-		public static XRInputSubsystem_Patch Instance => _instance;//.Value;
+		private static readonly Lazy<XRInputSubsystem_Patch> _instance = new Lazy<XRInputSubsystem_Patch>(() => new XRInputSubsystem_Patch());
+		// private static XRInputSubsystem_Patch _instance = new XRInputSubsystem_Patch();
+		public static XRInputSubsystem_Patch Instance => _instance.Value;
 
 		public uint Index { get; set; }
 

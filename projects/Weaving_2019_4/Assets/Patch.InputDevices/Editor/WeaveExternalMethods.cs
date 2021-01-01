@@ -5,8 +5,10 @@ using UnityEngine;
 
 namespace Fody.Weavers.InputDeviceWeaver
 {
-	public class WeaveExternalMethods : BaseModuleWeaver
+	public class WeaveExternalMethods : BaseModuleWeaver, IWithPriority
 	{
+		public int Priority => 100;
+		
 		public override void Execute()
 		{
 			int count = 0;
@@ -29,12 +31,13 @@ namespace Fody.Weavers.InputDeviceWeaver
 				    }
 			    }
 			}
-			Debug.Log("Patched " + count + " external methods:\n" + patchedMethods);
+			Debug.Log("Patched " + count + " external methods in " + ModuleDefinition + ":\n" + patchedMethods);
 		}
 
 		public override IEnumerable<string> GetAssembliesForScanning()
 		{
 			yield break;
 		}
+
 	}
 }
