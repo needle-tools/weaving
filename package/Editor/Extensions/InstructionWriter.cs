@@ -160,7 +160,8 @@ namespace needle.Weaver
 										break;
 									
 									case FieldDefinition fd:
-										inst.Operand = new FieldDefinition(fd.Name, fd.Attributes, module.ImportReference(fd.FieldType));
+										// inst.Operand = new FieldDefinition(fd.Name, fd.Attributes, module.ImportReference(fd.FieldType));
+										ResolveReferencesToSelf(method, patch, inst);
 										break;
 									case FieldReference fr:
 										inst.Operand = module.ImportReference(fr);

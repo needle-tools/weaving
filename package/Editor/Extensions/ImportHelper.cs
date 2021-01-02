@@ -41,8 +41,8 @@ namespace needle.Weaver
 				{
 					// var resolvedDeclaringType = (TypeReference) targetMethod.ResolveAndImportGenericMember(declaringType);
 					Log.Gray("Declaring type: " + declaringType);
-					var tr = new TypeReference(declaringType.Namespace, declaringType.Name, targetModule, targetModule);
-					var importedType = targetModule.ImportReference(tr.Copy<TypeReference>(targetModule));
+					var tr = declaringType.Copy<TypeReference>(targetModule); //new TypeReference(declaringType.Namespace, declaringType.Name, targetModule, targetModule);
+					var importedType = targetModule.ImportReference(tr);
 					obj.SetDeclaringType(importedType);
 				}
 				catch (Exception io)
@@ -71,11 +71,15 @@ namespace needle.Weaver
 					sourceMember = targetModule.ImportReference(tr.Copy<TypeReference>(targetModule));
 					break;
 				
-				// case FieldDefinition fd:
-				// 	var typeReference = fd.FieldType.Copy<TypeReference>(targetModule);
-				// 	var imported = targetModule.ImportReference(typeReference);
-				// 	sourceMember = new FieldDefinition(fd.Name, fd.Attributes, imported);
-				// 	break;
+				case FieldDefinition fd:
+					var typeReference = fd.FieldType.Copy<TypeReference>(targetModule);
+					typeReference = targetModule.ImportReference(typeReference);
+					typeReference.SetDeclaringType(fd.FieldType.DeclaringType);
+					var fieldCopy = new FieldDefinition(fd.Name, fd.Attributes, typeReference);
+					fieldCopy.SetDeclaringType(obj.DeclaringType);
+					sourceMember = targetModule.ImportReference(fieldCopy);
+					break;
+					
 				case FieldReference fr:
 					var fieldType = fr.FieldType.Copy<TypeReference>(targetModule);
 					fieldType = targetModule.ImportReference(fieldType);
@@ -119,10 +123,11 @@ namespace needle.Weaver
 		{
 			if(instance == null)
 				instance = (T) new TypeReference(tr.Namespace, tr.Name, targetModule, targetModule);
-
+			
 			if (tr.IsGenericInstance && tr is GenericInstanceType git)
 			{
-				instance = new GenericInstanceType(instance) as T;
+				if(!(instance is GenericInstanceType))
+					instance = new GenericInstanceType(instance) as T;
 				var git_instance = instance as GenericInstanceType;
 				for (var index = 0; index < git.GenericArguments.Count; index++)
 				{
@@ -153,7 +158,8 @@ namespace needle.Weaver
 				if (instance.GenericParameters.Count <= index) instance.GenericParameters.Add(paramCopy);
 				else instance.GenericParameters[index] = paramCopy;
 			}
-
+			
+			instance.IsValueType = tr.IsValueType;
 			return instance;
 		}
 

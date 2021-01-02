@@ -26,13 +26,18 @@ namespace needle.Weavers.InputDevicesPatch
 			m?.Invoke(null, new object[] {deviceId, change});
 			if (m == null) Debug.LogError("Failed to reflect invoke connection event");
 		}
-		
-		private static InputDevice GetDeviceAtXRNode(XRNode node)
+
+		public static InputDevice _GetDeviceAtXRNode(XRNode node)
 		{
 			var mock = _inputDevices.FirstOrDefault(d => d.Node == node);
 			if (mock == null || !XRInputSubsystem_Patch.Instance.TryGetInputDevices(_buffer))
 				return default;
 			return _buffer.FirstOrDefault(d => d.name == mock?.Name);
+		}
+		
+		private static InputDevice GetDeviceAtXRNode(XRNode node)
+		{
+			return _GetDeviceAtXRNode(node);
 		}
 
 		private static void GetDevices_Internal(List<InputDevice> inputDevices)

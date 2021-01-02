@@ -10,6 +10,11 @@ namespace needle.Weavers.InputDevicesPatch
 	{	
 		public static void GetInstances<T>(List<T> instances) where T : ISubsystem
 		{
+			InternalGetInstances(instances);
+		}
+
+		public static void InternalGetInstances<T>(List<T> instances)
+		{
 			if(instances == null) return;
 			instances.Clear();
 			if(XRInputSubsystem_Patch.Instance is T instance)
@@ -17,6 +22,5 @@ namespace needle.Weavers.InputDevicesPatch
 			else 
 				Debug.LogError("Failed adding mock subsystem");
 		}
-
 	}
 }
