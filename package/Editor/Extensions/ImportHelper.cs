@@ -41,20 +41,24 @@ namespace needle.Weaver
 				try
 				{
 					// var resolvedDeclaringType = (TypeReference) targetMethod.ResolveAndImportGenericMember(declaringType);
-					Log.Gray("Declaring type: " + declaringType.GetType() + " = " + declaringType);
+					Log.Gray("DeclaringType is " + declaringType.GetType() + " = " + declaringType);
 					// var tr = declaringType.Copy<TypeReference>(targetModule); //new TypeReference(declaringType.Namespace, declaringType.Name, targetModule, targetModule);
 					var tr = ResolveAndImportGenericMember(targetMethod, declaringType, module) as TypeReference;
 					obj.SetDeclaringType(targetModule.ImportReference(tr));
 				}
 				catch (Exception io)
 				{
-					Debug.LogError("Set Declaring type " + declaringType.GetType() + " / " + declaringType + " -> " + io);
+					Debug.LogError("Set DeclaringType " + declaringType.GetType() + " / " + declaringType + " failed: " + io);
 					throw;
 				}
 			}
 			
 			switch (obj)
 			{
+				default:
+					Debug.LogWarning("Unhandled? " + obj.GetType() + ", " + obj);
+					break;
+				
 				case GenericParameter gp:
 					sourceMember = targetModule.ImportReference(gp.Copy<TypeReference>(targetModule));
 					break;
@@ -65,7 +69,7 @@ namespace needle.Weaver
 					break;
 				
 				case TypeDefinition td:
-					var bt = td.BaseType.Copy<TypeReference>(targetModule);
+					var bt = td.BaseType;// td.BaseType.Copy<TypeReference>(targetModule);
 					bt = targetModule.ImportReference(bt);
 					td.BaseType = bt;
 					// sourceMember = new TypeDefinition(td.Namespace, td.Name, td.Attributes, bt);
@@ -75,7 +79,7 @@ namespace needle.Weaver
 					break;
 				
 				case FieldDefinition fd:
-					var typeReference = fd.FieldType.Copy<TypeReference>(targetModule);
+					var typeReference = fd.FieldType;// fd.FieldType.Copy<TypeReference>(targetModule);
 					typeReference = targetModule.ImportReference(typeReference);
 					typeReference.SetDeclaringType(fd.FieldType.DeclaringType);
 					fd.FieldType = typeReference;
@@ -83,9 +87,8 @@ namespace needle.Weaver
 					// fieldCopy.SetDeclaringType(declaringType);
 					// sourceMember = targetModule.ImportReference(fieldCopy);
 					break;
-					
 				case FieldReference fr:
-					var fieldType = fr.FieldType.Copy<TypeReference>(targetModule);
+					var fieldType = fr.FieldType;// fr.FieldType.Copy<TypeReference>(targetModule);
 					fieldType = targetModule.ImportReference(fieldType);
 					fieldType.SetDeclaringType(fr.FieldType.DeclaringType);
 					var fieldReference = new FieldReference(fr.Name, fieldType);
