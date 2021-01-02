@@ -6,14 +6,10 @@ using UnityEngine.XR;
 namespace needle.Weavers.InputDevicesPatch
 {
 	[NeedlePatch(typeof(SubsystemManager))]
-	public class SubsystemManager_Patch
+	public static class SubsystemManager_Patch
 	{	
+		// maybe this is missing: https://stackoverrun.com/de/q/1200700
 		public static void GetInstances<T>(List<T> instances) where T : ISubsystem
-		{
-			InternalGetInstances(instances);
-		}
-
-		public static void InternalGetInstances<T>(List<T> instances)
 		{
 			if(instances == null) return;
 			instances.Clear();
@@ -22,5 +18,11 @@ namespace needle.Weavers.InputDevicesPatch
 			else 
 				Debug.LogError("Failed adding mock subsystem");
 		}
+		//
+		// internal static void ReportSingleSubsystemAnalytics(string id)
+		// {
+		// 	
+		// }
+
 	}
 }

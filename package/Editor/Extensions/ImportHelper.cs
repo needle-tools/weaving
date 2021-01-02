@@ -28,9 +28,10 @@ namespace needle.Weaver
 			if (sourceMember == null) return null;
 
 			var targetModule = module ?? targetMethod.Module;
+			module = targetModule;
 			if (targetModule == null) throw new Exception("Missing module for resolving: " + targetMethod);
 			
-			Log.Gray(sourceMember.GetType() + " -> " + sourceMember);
+			Log.Gray(sourceMember.GetType() + " in " + sourceMember.Module + " -> " + sourceMember);
 
 			var obj = sourceMember;
 			
@@ -40,14 +41,15 @@ namespace needle.Weaver
 				try
 				{
 					// var resolvedDeclaringType = (TypeReference) targetMethod.ResolveAndImportGenericMember(declaringType);
-					Log.Gray("Declaring type: " + declaringType);
-					var tr = declaringType.Copy<TypeReference>(targetModule); //new TypeReference(declaringType.Namespace, declaringType.Name, targetModule, targetModule);
-					var importedType = targetModule.ImportReference(tr);
-					obj.SetDeclaringType(importedType);
+					Log.Gray("Declaring type: " + declaringType.GetType() + " = " + declaringType);
+					// var tr = declaringType.Copy<TypeReference>(targetModule); //new TypeReference(declaringType.Namespace, declaringType.Name, targetModule, targetModule);
+					var tr = ResolveAndImportGenericMember(targetMethod, declaringType, module) as TypeReference;
+					obj.SetDeclaringType(targetModule.ImportReference(tr));
 				}
 				catch (Exception io)
 				{
-					Debug.LogWarning("Set Declaring type " + declaringType.GetType() + " / " + declaringType + " -> " + io);
+					Debug.LogError("Set Declaring type " + declaringType.GetType() + " / " + declaringType + " -> " + io);
+					throw;
 				}
 			}
 			
@@ -58,14 +60,15 @@ namespace needle.Weaver
 					break;
 				
 				case GenericInstanceType git:
-					var gitCopy = new GenericInstanceType(git);
-					sourceMember = targetModule.ImportReference(git.Copy(targetModule, gitCopy));
+					var gitCopy = new GenericInstanceType(git.Copy<TypeReference>(targetModule, git));
+					sourceMember = targetModule.ImportReference(gitCopy);
 					break;
 				
 				case TypeDefinition td:
 					var bt = td.BaseType.Copy<TypeReference>(targetModule);
 					bt = targetModule.ImportReference(bt);
-					sourceMember = new TypeDefinition(td.Namespace, td.Name, td.Attributes, bt);
+					td.BaseType = bt;
+					// sourceMember = new TypeDefinition(td.Namespace, td.Name, td.Attributes, bt);
 					break;
 				case TypeReference tr:
 					sourceMember = targetModule.ImportReference(tr.Copy<TypeReference>(targetModule));
@@ -75,9 +78,10 @@ namespace needle.Weaver
 					var typeReference = fd.FieldType.Copy<TypeReference>(targetModule);
 					typeReference = targetModule.ImportReference(typeReference);
 					typeReference.SetDeclaringType(fd.FieldType.DeclaringType);
-					var fieldCopy = new FieldDefinition(fd.Name, fd.Attributes, typeReference);
-					fieldCopy.SetDeclaringType(obj.DeclaringType);
-					sourceMember = targetModule.ImportReference(fieldCopy);
+					fd.FieldType = typeReference;
+					// var fieldCopy = new FieldDefinition(fd.Name, fd.Attributes, typeReference);
+					// fieldCopy.SetDeclaringType(declaringType);
+					// sourceMember = targetModule.ImportReference(fieldCopy);
 					break;
 					
 				case FieldReference fr:
@@ -85,14 +89,16 @@ namespace needle.Weaver
 					fieldType = targetModule.ImportReference(fieldType);
 					fieldType.SetDeclaringType(fr.FieldType.DeclaringType);
 					var fieldReference = new FieldReference(fr.Name, fieldType);
-					fieldReference.DeclaringType = obj.DeclaringType;
+					// fieldReference.SetDeclaringType(declaringType);
 					sourceMember = targetModule.ImportReference(fieldReference);
 					break;
 				
 				case MethodDefinition md:
-					Debug.Log("METHOD DEF " + md);
+					md.ReturnType = targetModule.ImportReference(md.ReturnType);
+					md.MethodReturnType.ReturnType = targetModule.ImportReference(md.MethodReturnType.ReturnType);
+					// Debug.Log("METHOD DEF " + md);
 					// var rt = targetModule.ImportReference(md.ReturnType.Copy<TypeReference>(targetModule));
-					var copy = md.Copy(targetModule);
+					// var copy = md.Copy(targetModule);
 					// sourceMember = methodReference;
 					// var bst = md.DeclaringType.BaseType;
 					// var copy = new MethodDefinition(md.Name, md.Attributes, methodReference.ReturnType);
@@ -100,7 +106,9 @@ namespace needle.Weaver
 					// 	targetModule.ImportReference(bst));
 					// copy.ResolvePatchReferences(md, md.Module);
 					// sourceMember = copy;
-					sourceMember = targetModule.ImportReference(copy);
+					// copy = targetModule.ImportReference(copy);
+					// sourceMember = new MethodDefinition(md.Name, md.Attributes, copy.ReturnType);
+					// sourceMember.SetDeclaringType(declaringType);
 					break;
 				case MethodReference mr:
 					sourceMember = targetModule.ImportReference(mr.Copy(targetModule));
@@ -112,6 +120,9 @@ namespace needle.Weaver
 
 		public static MemberReference SetDeclaringType(this MemberReference tr, TypeReference dt)
 		{
+			if (dt == null) return tr;
+			// handle setting declaring type not supported
+			if (tr is MethodSpecification) return tr;
 			if (tr is GenericInstanceType git)
 				git.ElementType.DeclaringType = dt;
 			else
@@ -123,6 +134,7 @@ namespace needle.Weaver
 		{
 			if(instance == null)
 				instance = (T) new TypeReference(tr.Namespace, tr.Name, targetModule, targetModule);
+
 			
 			if (tr.IsGenericInstance && tr is GenericInstanceType git)
 			{
@@ -159,6 +171,7 @@ namespace needle.Weaver
 				else instance.GenericParameters[index] = paramCopy;
 			}
 			
+			instance.MetadataToken = tr.MetadataToken;
 			instance.IsValueType = tr.IsValueType;
 			return instance;
 		}

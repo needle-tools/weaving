@@ -60,6 +60,7 @@ namespace needle.Weaver
 						if(!method.DoSignaturesMatch(patchMethod)) continue;
 						Debug.Log("Start patching " + methodFullName);
 
+						
 						// foreach (var param in method.Parameters) Debug.Log(param);
 						// if (!method.IsStatic)
 						// {	
@@ -68,21 +69,21 @@ namespace needle.Weaver
 						
 						
 						// method.GenericParameters.Clear();
-						foreach (var gv in patchMethod.GenericParameters)
-						{
-							
-							try
-							{
-								// var t = gv.Resolve();
-								// var tr = module.ImportReference(gv);
-								// method.GenericParameters.Add(new GenericParameter(tr));
-							}
-							catch (Exception e)
-							{
-								Debug.LogError("Error adding generic variable " + gv + " for " + method + "\n" + gv?.Type + "\n" + patchMethod.CaptureILString());
-								throw e;
-							}
-						}
+						// foreach (var gv in patchMethod.GenericParameters)
+						// {
+						// 	
+						// 	try
+						// 	{
+						// 		// var t = gv.Resolve();
+						// 		// var tr = module.ImportReference(gv);
+						// 		// method.GenericParameters.Add(new GenericParameter(tr));
+						// 	}
+						// 	catch (Exception e)
+						// 	{
+						// 		Debug.LogError("Error adding generic variable " + gv + " for " + method + "\n" + gv?.Type + "\n" + patchMethod.CaptureILString());
+						// 		throw e;
+						// 	}
+						// }
 						
 						// method.Parameters.Clear();
 						// foreach (var v in pm.Parameters)
@@ -99,25 +100,25 @@ namespace needle.Weaver
 						// 	}
 						// }
 
-						method.Body.Variables.Clear();
-						foreach(var v in patchMethod.Body.Variables)
-						{
-							if (v?.VariableType == null) throw new Exception("Variable or type is null: " + v + " / " + v?.VariableType);
-							try
-							{
-								var type = v.VariableType;
-								// HACK
-								type = type.ResolveGenericParameters(method);
-								
-								var nv = new VariableDefinition(module.ImportReference(type));
-								method.Body.Variables.Add(nv);
-							}
-							catch (Exception e)
-							{
-								Debug.LogError("Error adding variable " + v + " for " + method + "\nVariableType: " + v.VariableType + "\n");
-								throw e;
-							}
-						}
+						// method.Body.Variables.Clear();
+						// foreach(var v in patchMethod.Body.Variables)
+						// {
+						// 	if (v?.VariableType == null) throw new Exception("Variable or type is null: " + v + " / " + v?.VariableType);
+						// 	try
+						// 	{
+						// 		var type = v.VariableType;
+						// 		// HACK
+						// 		type = type.ResolveGenericParameters(method);
+						// 		
+						// 		var nv = new VariableDefinition(module.ImportReference(type));
+						// 		method.Body.Variables.Add(nv);
+						// 	}
+						// 	catch (Exception e)
+						// 	{
+						// 		Debug.LogError("Error adding variable " + v + " for " + method + "\nVariableType: " + v.VariableType + "\n");
+						// 		throw e;
+						// 	}
+						// }
 
 						method.ResolvePatchReferences(patchMethod);
 						
@@ -132,30 +133,30 @@ namespace needle.Weaver
 								switch (inst.Operand)
 								{
 									case TypeDefinition td:
-										inst.Operand = new TypeDefinition(td.Namespace, td.Name, td.Attributes, module.ImportReference(td.BaseType));
+										// inst.Operand = new TypeDefinition(td.Namespace, td.Name, td.Attributes, module.ImportReference(td.BaseType));
 										break;
 									case GenericParameter gp:
 										// TODO
 										break;
 									case TypeReference tr:
-										inst.Operand = module.ImportReference(tr);
+										// inst.Operand = module.ImportReference(tr);
 										ResolveReferencesToSelf(method, patch, inst);
 										break;
 									case Type t:
-										inst.Operand = module.ImportReference(t);
+										// inst.Operand = module.ImportReference(t);
 										ResolveReferencesToSelf(method, patch, inst);
 										break;
 									
 									case MethodDefinition md:
-										inst.Operand = new MethodDefinition(md.Name, md.Attributes, module.ImportReference(md.ReturnType));
+										// inst.Operand = new MethodDefinition(md.Name, md.Attributes, module.ImportReference(md.ReturnType));
 										ResolveReferencesToSelf(method, patch, inst);
 										break;
 									case MethodReference mr:
-										inst.Operand =  module.ImportReference(mr);
+										// inst.Operand =  module.ImportReference(mr);
 										ResolveReferencesToSelf(method, patch, inst);
 										break;
 									case MethodBase mb:
-										inst.Operand = module.ImportReference(mb);
+										// inst.Operand = module.ImportReference(mb);
 										ResolveReferencesToSelf(method, patch, inst);
 										break;
 									
@@ -164,11 +165,11 @@ namespace needle.Weaver
 										ResolveReferencesToSelf(method, patch, inst);
 										break;
 									case FieldReference fr:
-										inst.Operand = module.ImportReference(fr);
+										// inst.Operand = module.ImportReference(fr);
 										ResolveReferencesToSelf(method, patch, inst);
 										break;
 									case FieldInfo fi:
-										inst.Operand = module.ImportReference(fi);
+										// inst.Operand = module.ImportReference(fi);
 										ResolveReferencesToSelf(method, patch, inst);
 										break;
 								}
@@ -177,7 +178,7 @@ namespace needle.Weaver
 							targetProcessor.Append(inst);
 						}
 
-						method.Body.Optimize();
+						// method.Body.Optimize();
 
 						if (debugLog)
 						{
