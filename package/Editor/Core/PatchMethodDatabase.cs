@@ -4,7 +4,6 @@ using System.Linq;
 using System.Reflection;
 using Mono.Cecil;
 using UnityEditor;
-using UnityEngine;
 
 namespace needle.Weaver
 {
@@ -20,15 +19,19 @@ namespace needle.Weaver
 		/// <param name="target">the method to find a patch for</param>
 		/// <param name="res">contains the patch method and the attribute</param>
 		/// <typeparam name="TInfo">the member type to patch</typeparam>
-		public static bool TryGetPatch<TInfo>(IMemberDefinition target, out (TInfo patch, NeedlePatch attribute) res)
+		public static bool TryGetPatch<TInfo>(IMemberDefinition target, bool skipDisabled, out (TInfo patch, NeedlePatch attribute) res)
 			where TInfo : MemberInfo
 		{
 			var marked = MarkedTypes;
 			var available = GetPatches<TInfo>(marked);
 			res = TryFindPatchMember(target, available);
-			return res.patch != null;
+			return res.patch != null && IsEnabled(res.attribute, res.patch);
 		}
 
+		public static bool IsEnabled(NeedlePatch attribute, MemberInfo member)
+		{
+			return !WeaverSettings.instance.IsDisabled(attribute.FullName + "." + member.Name);
+		}
 
 		private static readonly Lazy<TypeCache.TypeCollection> _typesWithAttribute =
 			new Lazy<TypeCache.TypeCollection>(TypeCache.GetTypesWithAttribute<NeedlePatch>);
@@ -122,10 +125,14 @@ namespace needle.Weaver
 
 		public class Patch
 		{
-			public string FullName { get; internal set; }
 			public bool FoundTarget => Target != null;
 			public MemberInfo Target { get; internal set; }
-			public readonly List<MemberInfo> Sources = new List<MemberInfo>();
+			public string TargetBaseName { get; internal set; }
+			public string TargetFullName { get; internal set; }
+			
+			public MemberInfo PatchMember { get; internal set; }
+			public string PatchFullName { get; internal set; }
+			public string PatchName { get; internal set; }
 		}
 
 		private static List<Patch> FindPatches()
@@ -145,13 +152,11 @@ namespace needle.Weaver
 				foreach (var member in info.members)
 				{
 					var baseName = kvp.Key.FullName;
-					var fullname = baseName + "." + member.Name;
 					var name = member.Name;
-					if (name.StartsWith("get_") || name.StartsWith("set_"))
-					{
-						name = name.Substring(4);
-						Debug.Log(name);
-					}
+					// if (name.StartsWith("get_") || name.StartsWith("set_"))
+					// {
+					// 	name = name.Substring(4); 
+					// }
 					var target = types.FirstOrDefault(t => t.FullName == baseName);
 					var targetMember = target?.GetMember(name, (BindingFlags)~0).FirstOrDefault();
 					var key = baseName + "." + name;
@@ -161,12 +166,14 @@ namespace needle.Weaver
 					}
 					var p = found[key];
 
-					Debug.Log("Found target for " + fullname + " -> " + targetMember);
+					// Log.Gray("Found target for " + fullname + " -> " + targetMember);
 
 					p.Target = targetMember;
-					p.FullName = fullname;
-					if(!p.Sources.Contains(member))
-						p.Sources.Add(member);
+					p.TargetFullName = key;
+					p.TargetBaseName = baseName;
+					p.PatchMember = member;
+					p.PatchName = member.Name;
+					p.PatchFullName = member.DeclaringType?.FullName + "." + member.Name;
 				}
 			}
 			return found.Values.ToList();

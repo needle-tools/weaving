@@ -18,11 +18,12 @@ namespace Patch.InputDevices.Editor
 			// TODO: warn if any typed marked with patch attribute was never used
 			var failed = "";
 			var cnt = 0;
+			const bool skipDisabled = true;
 
 			ModuleDefinition.ForEachMethod(def =>
 			{
 				if (!def.IsConstructor) return;
-				if (!PatchMethodDatabase.TryGetPatch<ConstructorInfo>(def, out var res))
+				if (!PatchMethodDatabase.TryGetPatch<ConstructorInfo>(def, skipDisabled, out var res))
 					return;
 				// var res = TryFindPatchMember(def, constructors);
 				var patch = res.patch;
@@ -44,7 +45,7 @@ namespace Patch.InputDevices.Editor
 				// if (!def.Name.Contains("GetInstances")) return;
 				// if(!def.Name.Contains("ReportSingleSubsystemAnalytics")) return;
 				// if (!def.Name.Contains("GetDeviceAtXRNode")) return;
-				if (!PatchMethodDatabase.TryGetPatch<MethodInfo>(def, out var res))
+				if (!PatchMethodDatabase.TryGetPatch<MethodInfo>(def, skipDisabled, out var res))
 					return;
 				var patch = res.patch;
 				if (patch == null) return;
@@ -59,7 +60,7 @@ namespace Patch.InputDevices.Editor
 			// patch properties
 			ModuleDefinition.ForEachProperty(def =>
 			{
-				if (!PatchMethodDatabase.TryGetPatch<PropertyInfo>(def, out var res))
+				if (!PatchMethodDatabase.TryGetPatch<PropertyInfo>(def, skipDisabled, out var res))
 					return;
 				var patch = res.patch;
 				if (patch == null) return;
