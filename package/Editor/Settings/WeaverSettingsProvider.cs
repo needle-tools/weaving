@@ -75,7 +75,6 @@ namespace needle.Weaver
 			{
 				patchTitleActive = new GUIStyle(EditorStyles.label)
 				{
-					fontStyle = FontStyle.Bold,
 				};
 			}
 
@@ -97,19 +96,37 @@ namespace needle.Weaver
 		private void DrawPatchesGUI()
 		{
 			var foldoutText = "Patched Methods";
-			if (byName.Count <= 0) foldoutText += " <Will load on open>";
+			if (byName.Count <= 0)
+			{
+				foldoutText += " <Will load on open>";
+			}
 			foldoutText += " (Disabled: " + Settings.DisabledPatches.Count + ")";
 			EditorGUILayout.BeginHorizontal();
 			patchesFoldout = EditorGUILayout.Foldout(patchesFoldout, foldoutText, true);
 			GUILayout.FlexibleSpace();
 			EditorGUI.BeginDisabledGroup(Settings.DisabledPatches.Count <= 0);
-			if (GUILayout.Button("Reset"))
+			if (GUILayout.Button("All"))
 			{
-				Undo.RecordObject(Settings, "Clear disabled patches");
+				Undo.RecordObject(Settings, "Enable patches");
 				Settings.DisabledPatches.Clear();
 				Settings.Save();
 			}
 			EditorGUI.EndDisabledGroup();
+			if (byName?.Count > 0)
+			{
+				if (GUILayout.Button("None"))
+				{
+					Undo.RecordObject(Settings, "Disable patches");
+					foreach(var etr in byName.Values.SelectMany(p => p.Patches)) Settings.SetPatchSettingState(etr, false);
+					Settings.Save();
+				}
+				if (GUILayout.Button("Invert"))
+				{
+					Undo.RecordObject(Settings, "Invert patches");
+					foreach(var etr in byName.Values.SelectMany(p => p.Patches)) Settings.SetPatchSettingState(etr, Settings.IsDisabled(etr));
+					Settings.Save();
+				}
+			}
 			EditorGUILayout.EndHorizontal();
 			
 			if (patchesFoldout)
@@ -139,6 +156,26 @@ namespace needle.Weaver
 					var active = state.Patches.Count(p => !Settings.IsDisabled(p.TargetFullName));
 					state.Foldout = EditorGUILayout.Foldout(state.Foldout, name + " (Enabled: " + active + "/" + patches.Count + ")", true);
 					GUILayout.FlexibleSpace();
+					if (GUILayout.Button("All"))
+					{
+						Undo.RecordObject(Settings, "Enable all " + name);
+						foreach (var patch in patches)
+						{
+							Settings.SetPatchSettingState(patch.TargetFullName, true);
+						}
+
+						Settings.Save();
+					}
+					if (GUILayout.Button("None"))
+					{
+						Undo.RecordObject(Settings, "Disable all " + name);
+						foreach (var patch in patches)
+						{
+							Settings.SetPatchSettingState(patch.TargetFullName, false);
+						}
+
+						Settings.Save();
+					}
 					if (GUILayout.Button("Invert"))
 					{
 						Undo.RecordObject(Settings, "Invert Patches state " + name);
@@ -150,6 +187,7 @@ namespace needle.Weaver
 						Settings.Save();
 					}
 
+
 					EditorGUILayout.EndHorizontal();
 					if (state.Foldout)
 					{
@@ -158,9 +196,13 @@ namespace needle.Weaver
 						{
 							EditorGUI.BeginDisabledGroup(!patch.FoundTarget);
 							EditorGUI.BeginChangeCheck();
+							var displayName = patch.PatchName;
+							if (patch.FoundTarget) displayName = patch.Target.ToString();
+							var isActive = !Settings.IsDisabled(patch.TargetFullName);
+							var style = isActive ? patchTitleActive : patchTitleInactive;
 							var ps = EditorGUILayout.ToggleLeft(
-								new GUIContent(patch.PatchName, patch.TargetFullName + "\n" + patch.Target + "\nin " + patch.PatchFullName),
-								!Settings.IsDisabled(patch.TargetFullName));
+								new GUIContent(displayName, patch.TargetFullName + "\n" + patch.Target + "\nin " + patch.PatchFullName),
+								!Settings.IsDisabled(patch.TargetFullName), style);
 							if (EditorGUI.EndChangeCheck())
 							{
 								Undo.RecordObject(Settings, (ps ? "Enable" : "Disable") + " patch: " + patch.PatchFullName);

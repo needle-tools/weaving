@@ -11,9 +11,15 @@ namespace needle.Weaver
 		public void Save() => Save(true);
 		public bool PatchOnBuild = false;
 
+		public bool IsDisabled(PatchMethodDatabase.Patch patch) => DisabledPatches.Contains(patch.TargetFullName);
 		public bool IsDisabled(string patchFullName) => DisabledPatches.Contains(patchFullName);
  
 		public List<string> DisabledPatches = new List<string>();
+		
+		public void SetPatchSettingState(PatchMethodDatabase.Patch patch, bool enabled)
+		{
+			SetPatchSettingState(patch.TargetFullName, enabled);
+		}
 		
 		public void SetPatchSettingState(string fullname, bool enabled)
 		{
