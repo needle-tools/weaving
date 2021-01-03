@@ -468,7 +468,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 1
     m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: "Frame=134\nFound 0 InputDevices\n Has Head device...  = False, , \nfloat:
+  m_Text: "Frame=184\nFound 0 InputDevices\n Has Head device...  = False, , \nfloat:
     0 == False\nvec3: (0.0, 0.0, 0.0) == False\nSubsystems?: 0\n"
 --- !u!222 &381583867
 CanvasRenderer:
@@ -2155,7 +2155,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1985194330}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 173.6, y: 33.4, z: 15.2}
+  m_LocalPosition: {x: 179.6, y: 33.4, z: 15.2}
   m_LocalScale: {x: 7.013, y: 7.013, z: 7.013}
   m_Children: []
   m_Father: {fileID: 0}

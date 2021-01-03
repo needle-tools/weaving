@@ -13,3 +13,4 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: needle.weaver.editor:needle.Weaver:WeaverSettings
   PatchOnBuild: 0
+  DisabledPatches: []
