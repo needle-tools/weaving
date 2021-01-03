@@ -98,13 +98,14 @@ namespace needle.Weaver
 		{
 			var foldoutText = "Patched Methods";
 			if (byName.Count <= 0) foldoutText += " <Will load on open>";
-			
+			foldoutText += " (Disabled: " + Settings.DisabledPatches.Count + ")";
 			EditorGUILayout.BeginHorizontal();
 			patchesFoldout = EditorGUILayout.Foldout(patchesFoldout, foldoutText, true);
 			GUILayout.FlexibleSpace();
 			EditorGUI.BeginDisabledGroup(Settings.DisabledPatches.Count <= 0);
 			if (GUILayout.Button("Reset"))
 			{
+				Undo.RecordObject(Settings, "Clear disabled patches");
 				Settings.DisabledPatches.Clear();
 				Settings.Save();
 			}
@@ -119,7 +120,7 @@ namespace needle.Weaver
 					var pm = PatchMethodDatabase.AllPatchedMethods();
 					foreach (var patch in pm)
 					{
-						if (!byName.ContainsKey(patch.TargetBaseName)) byName.Add(patch.TargetBaseName, new PatchGUIState() {Foldout = true});
+						if (!byName.ContainsKey(patch.TargetBaseName)) byName.Add(patch.TargetBaseName, new PatchGUIState() {Foldout = false});
 						byName[patch.TargetBaseName].Patches.Add(patch);
 					}
 
@@ -135,10 +136,12 @@ namespace needle.Weaver
 					var state = kvp.Value;
 					var patches = state.Patches;
 					EditorGUILayout.BeginHorizontal();
-					state.Foldout = EditorGUILayout.Foldout(state.Foldout, name + " [" + patches.Count + "]", true);
+					var active = state.Patches.Count(p => !Settings.IsDisabled(p.TargetFullName));
+					state.Foldout = EditorGUILayout.Foldout(state.Foldout, name + " (Enabled: " + active + "/" + patches.Count + ")", true);
 					GUILayout.FlexibleSpace();
 					if (GUILayout.Button("Invert"))
 					{
+						Undo.RecordObject(Settings, "Invert Patches state " + name);
 						foreach (var patch in patches)
 						{
 							Settings.SetPatchSettingState(patch.TargetFullName, Settings.IsDisabled(patch.TargetFullName));
@@ -156,10 +159,11 @@ namespace needle.Weaver
 							EditorGUI.BeginDisabledGroup(!patch.FoundTarget);
 							EditorGUI.BeginChangeCheck();
 							var ps = EditorGUILayout.ToggleLeft(
-								new GUIContent(patch.PatchName, patch.TargetFullName + "\n" + patch.Target + "\nin " + patch.TargetFullName),
+								new GUIContent(patch.PatchName, patch.TargetFullName + "\n" + patch.Target + "\nin " + patch.PatchFullName),
 								!Settings.IsDisabled(patch.TargetFullName));
 							if (EditorGUI.EndChangeCheck())
 							{
+								Undo.RecordObject(Settings, (ps ? "Enable" : "Disable") + " patch: " + patch.PatchFullName);
 								Settings.SetPatchSettingState(patch.TargetFullName, ps);
 								Settings.Save();
 							}
