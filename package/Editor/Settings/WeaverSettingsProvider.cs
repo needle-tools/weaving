@@ -34,12 +34,19 @@ namespace needle.Weaver
             InitStyles();
 
             EditorGUILayout.BeginVertical();
+            
             scroll = EditorGUILayout.BeginScrollView(scroll);
-
             EditorGUILayout.BeginVertical();
+            
             WeaverSettings.instance.PatchOnBuild = EditorGUILayout.Toggle("Allow Patch on Build", WeaverSettings.instance.PatchOnBuild);
-            EditorGUILayout.EndVertical();
 
+            var pm = PatchMethodDatabase.AllPatchedMethods();
+            foreach (var patch in pm)
+            {
+                var enabled = EditorGUILayout.ToggleLeft(patch.FullName, patch.FoundTarget);
+            }
+            
+            EditorGUILayout.EndVertical();
             EditorGUILayout.EndScrollView();
             
             GUILayout.FlexibleSpace();
@@ -76,13 +83,5 @@ namespace needle.Weaver
                     normal = {textColor = new Color(.5f, .5f, .5f),},
                 };
         }
-    }
-
-    [FilePath("ProjectSettings/NeedleWeaverSettings.asset", FilePathAttribute.Location.ProjectFolder)]
-    public class WeaverSettings : ScriptableSingleton<WeaverSettings>
-    {
-        public void Save() => Save(true);
-
-        public bool PatchOnBuild = false;
     }
 }

@@ -15,20 +15,16 @@ namespace Patch.InputDevices.Editor
 	{
 		public override void Execute()
 		{
-			// patch methods
-			var marked = TypeCache.GetTypesWithAttribute<NeedlePatch>();
 			// TODO: warn if any typed marked with patch attribute was never used
-			
-			Debug.Log("Found " + marked.Count + " marked types \n" + string.Join("\n", marked) + "\n");
-			
 			var failed = "";
 			var cnt = 0;
 
-			var constructors = Resolve<ConstructorInfo>(marked);
 			ModuleDefinition.ForEachMethod(def =>
 			{
 				if (!def.IsConstructor) return;
-				var res = TryFindPatchMember(def, constructors);
+				if (!PatchMethodDatabase.TryGetPatch<ConstructorInfo>(def, out var res))
+					return;
+				// var res = TryFindPatchMember(def, constructors);
 				var patch = res.patch;
 				if (patch == null) return;
 				// Ensure the method has a body (if it's a external method)
@@ -43,13 +39,13 @@ namespace Patch.InputDevices.Editor
 			if(cnt > 0)
 				Debug.LogWarning("Could not patch " + cnt + " methods\n" + failed);
 			
-			var methods = Resolve<MethodInfo>(marked);
 			ModuleDefinition.ForEachMethod(def =>
 			{
 				// if (!def.Name.Contains("GetInstances")) return;
 				// if(!def.Name.Contains("ReportSingleSubsystemAnalytics")) return;
 				// if (!def.Name.Contains("GetDeviceAtXRNode")) return;
-				var res = TryFindPatchMember(def, methods);
+				if (!PatchMethodDatabase.TryGetPatch<MethodInfo>(def, out var res))
+					return;
 				var patch = res.patch;
 				if (patch == null) return;
 				// Ensure the method has a body (if it's a external method)
@@ -61,10 +57,10 @@ namespace Patch.InputDevices.Editor
 				Debug.LogWarning("Could not patch " + cnt + " methods\n" + failed);
 			
 			// patch properties
-			var properties = Resolve<PropertyInfo>(marked);
 			ModuleDefinition.ForEachProperty(def =>
 			{
-				var res = TryFindPatchMember(def, properties);
+				if (!PatchMethodDatabase.TryGetPatch<PropertyInfo>(def, out var res))
+					return;
 				var patch = res.patch;
 				if (patch == null) return;
 				// make sure property return type matches patch return type
