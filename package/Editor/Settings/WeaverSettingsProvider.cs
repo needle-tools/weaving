@@ -34,7 +34,6 @@ namespace needle.Weaver
 
 		public override void OnGUI(string searchContext)
 		{
-			EditorGUI.indentLevel++;
 			InitStyles();
 
 			EditorGUILayout.BeginVertical();
@@ -42,8 +41,8 @@ namespace needle.Weaver
 			scroll = EditorGUILayout.BeginScrollView(scroll);
 			EditorGUILayout.BeginVertical();
 
-			Settings.PatchOnBuild = EditorGUILayout.Toggle("Allow Patch on Build", Settings.PatchOnBuild);
-
+			Settings.PatchOnBuild = EditorGUILayout.ToggleLeft("Automatically Patch On Build", Settings.PatchOnBuild);
+			GUILayout.Space(10);
 			DrawPatchesGUI();
 
 			EditorGUILayout.EndVertical();
@@ -57,7 +56,6 @@ namespace needle.Weaver
 			EditorGUILayout.EndHorizontal();
 
 			EditorGUILayout.EndVertical();
-			EditorGUI.indentLevel--;
 		}
 
 		private GUIStyle patchTitleInactive, patchTitleActive, descriptionStyle;
@@ -92,10 +90,13 @@ namespace needle.Weaver
 		}
 
 		private static readonly Dictionary<string, PatchGUIState> byName = new Dictionary<string, PatchGUIState>();
+		private static bool patchesAreKnown => byName.Count > 0;
 
 		private void DrawPatchesGUI()
 		{
-			var foldoutText = "Patched Methods";
+			EditorGUILayout.LabelField("Needle Patches", EditorStyles.boldLabel);
+			
+			var foldoutText = "Patch Methods";
 			if (byName.Count <= 0)
 			{
 				foldoutText += " <Will load on open>";
@@ -104,16 +105,16 @@ namespace needle.Weaver
 			EditorGUILayout.BeginHorizontal();
 			patchesFoldout = EditorGUILayout.Foldout(patchesFoldout, foldoutText, true);
 			GUILayout.FlexibleSpace();
-			EditorGUI.BeginDisabledGroup(Settings.DisabledPatches.Count <= 0);
-			if (GUILayout.Button("All"))
+			if (patchesAreKnown)
 			{
-				Undo.RecordObject(Settings, "Enable patches");
-				Settings.DisabledPatches.Clear();
-				Settings.Save();
-			}
-			EditorGUI.EndDisabledGroup();
-			if (byName?.Count > 0)
-			{
+				EditorGUI.BeginDisabledGroup(Settings.DisabledPatches.Count <= 0);
+				if (GUILayout.Button(patchesAreKnown ? "All" : "Enable all"))
+				{
+					Undo.RecordObject(Settings, "Enable patches");
+					Settings.DisabledPatches.Clear();
+					Settings.Save();
+				}
+				EditorGUI.EndDisabledGroup();
 				if (GUILayout.Button("None"))
 				{
 					Undo.RecordObject(Settings, "Disable patches");
