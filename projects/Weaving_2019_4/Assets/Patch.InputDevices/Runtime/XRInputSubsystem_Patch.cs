@@ -80,18 +80,18 @@ namespace needle.Weavers.InputDevicesPatch
 		}
 
 
-		public event Action<XRInputSubsystem> trackingOriginUpdated;
-		public event Action<XRInputSubsystem> boundaryChanged;
+		// public event Action<XRInputSubsystem> trackingOriginUpdated;
+		// public event Action<XRInputSubsystem> boundaryChanged;
 
-		private static void InvokeTrackingOriginUpdatedEvent(IntPtr internalPtr)
-		{
-			Instance.trackingOriginUpdated?.Invoke(Instance);
-		}
-		
-		private static void InvokeBoundaryChangedEvent(IntPtr internalPtr)
-		{
-			Instance.boundaryChanged?.Invoke(Instance);
-		}
+		// private static void InvokeTrackingOriginUpdatedEvent(IntPtr internalPtr)
+		// {
+		// 	Instance.trackingOriginUpdated?.Invoke(Instance);
+		// }
+		//
+		// private static void InvokeBoundaryChangedEvent(IntPtr internalPtr)
+		// {
+		// 	Instance.boundaryChanged?.Invoke(Instance);
+		// }
 
 
 	}

@@ -22,6 +22,7 @@ namespace Fody.Weavers.InputDeviceWeaver
 			{
 				"UnityEngine.SubsystemsModule.dll",
 				"UnityEngine.XRModule.dll",
+				"UnityEngine.VRModule.dll",
 			};
 
 			var dlls = Directory.GetFiles(Constants.WebGLAssembliesPath, "*.dll", SearchOption.AllDirectories).Where(f => dllNames.Any(f.EndsWith));

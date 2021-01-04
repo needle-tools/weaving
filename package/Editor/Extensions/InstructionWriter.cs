@@ -76,12 +76,12 @@ namespace needle.Weaver
 							{
 								// var t = gv.Resolve();
 								var tr = method.ResolveAndImportGenericMember(gv) as GenericParameter;
-								method.GenericParameters.Add(gv);
+								method.GenericParameters.Add(tr);
 							}
 							catch (Exception e)
 							{
 								Debug.LogError("Error adding generic variable " + gv + " for " + method + "\n" + gv?.Type + "\n" + patchMethod.CaptureILString());
-								throw e;
+								throw;
 							}
 						}
 						
@@ -117,7 +117,7 @@ namespace needle.Weaver
 							catch (Exception e)
 							{
 								Debug.LogError("Error adding variable " + v + " for " + method + "\nVariableType: " + v.VariableType + "\n");
-								throw e;
+								throw;
 							}
 						}
 
