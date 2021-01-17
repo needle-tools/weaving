@@ -68,58 +68,58 @@ namespace needle.Weaver
 						// }
 						
 						
-						method.GenericParameters.Clear();
-						foreach (var gv in patchMethod.GenericParameters)
-						{
-							
-							try
-							{
-								// var t = gv.Resolve();
-								var tr = method.ResolveAndImportGenericMember(gv) as GenericParameter;
-								method.GenericParameters.Add(tr);
-							}
-							catch (Exception e)
-							{
-								Debug.LogError("Error adding generic variable " + gv + " for " + method + "\n" + gv?.Type + "\n" + patchMethod.CaptureILString());
-								throw;
-							}
-						}
+						// method.GenericParameters.Clear();
+						// foreach (var gv in patchMethod.GenericParameters)
+						// {
+						// 	
+						// 	try
+						// 	{
+						// 		// var t = gv.Resolve();
+						// 		var tr = method.ResolveAndImportGenericMember(gv) as GenericParameter;
+						// 		method.GenericParameters.Add(tr);
+						// 	}
+						// 	catch (Exception e)
+						// 	{
+						// 		Debug.LogError(e.Message + "; " + gv + ", " + method + "\nType=" + gv?.Type + "\n" + patchMethod.CaptureILString() + "\n" +e.StackTrace);
+						// 		throw;
+						// 	}
+						// }
 						
-						method.Parameters.Clear();
-						foreach (var v in patchMethod.Parameters)
-						{
-							try
-							{
-								
-								v.ParameterType = method.ResolveAndImportGenericMember(v.ParameterType) as TypeReference;;
-								method.Parameters.Add(v);
-							}
-							catch (Exception e)
-							{
-								Debug.LogError("Error adding parameter " + v + " for " + method + "\n" + v?.ParameterType + "\n" + e);
-								throw;
-							}
-						}
+						// method.Parameters.Clear();
+						// foreach (var v in patchMethod.Parameters)
+						// {
+						// 	try
+						// 	{
+						// 		
+						// 		v.ParameterType = method.ResolveAndImportGenericMember(v.ParameterType) as TypeReference;;
+						// 		method.Parameters.Add(v);
+						// 	}
+						// 	catch (Exception e)
+						// 	{
+						// 		Debug.LogError("Error adding parameter " + v + " for " + method + "\n" + v?.ParameterType + "\n" + e);
+						// 		throw;
+						// 	}
+						// }
 
-						method.Body.Variables.Clear();
-						foreach(var v in patchMethod.Body.Variables)
-						{
-							if (v?.VariableType == null) throw new Exception("Variable or type is null: " + v + " / " + v?.VariableType);
-							try
-							{
-								var type = v.VariableType;
-								// HACK
-								type = type.ResolveGenericParameters(method);
-								
-								var nv = new VariableDefinition(module.ImportReference(type));
-								method.Body.Variables.Add(nv);
-							}
-							catch (Exception e)
-							{
-								Debug.LogError("Error adding variable " + v + " for " + method + "\nVariableType: " + v.VariableType + "\n");
-								throw;
-							}
-						}
+						// method.Body.Variables.Clear();
+						// foreach(var v in patchMethod.Body.Variables)
+						// {
+						// 	if (v?.VariableType == null) throw new Exception("Variable or type is null: " + v + " / " + v?.VariableType);
+						// 	try
+						// 	{
+						// 		var type = v.VariableType;
+						// 		// HACK
+						// 		type = type.ResolveGenericParameters(method);
+						// 		
+						// 		var nv = new VariableDefinition(module.ImportReference(type));
+						// 		method.Body.Variables.Add(nv);
+						// 	}
+						// 	catch (Exception e)
+						// 	{
+						// 		Debug.LogError("Error adding variable " + v + " for " + method + "\nVariableType: " + v.VariableType + "\n");
+						// 		throw;
+						// 	}
+						// }
 
 						method.ResolvePatchReferences(patchMethod);
 						

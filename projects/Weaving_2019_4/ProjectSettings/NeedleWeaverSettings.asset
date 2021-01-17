@@ -9,12 +9,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 0}
+  m_Script: {fileID: 11500000, guid: e298431e08d14d41b1bd0e7d1df03ffe, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: needle.weaver.editor:needle.Weaver:WeaverSettings
-  PatchOnBuild: 1
+  m_EditorClassIdentifier: 
+  PatchOnBuild: 0
   DisabledPatches:
-  - UnityEngine.SubsystemManager.GetInstances
   - UnityEngine.XR.InputDevice.get_subsystem
   - UnityEngine.XR.InputDevice.IsValidId
   - UnityEngine.XR.InputDevice.m_DeviceId
@@ -23,6 +22,7 @@ MonoBehaviour:
   - UnityEngine.XR.InputDevices.GetDeviceCharacteristics
   - UnityEngine.XR.InputDevices.GetDeviceManufacturer
   - UnityEngine.XR.InputDevices.GetDeviceName
+  - UnityEngine.XR.InputDevices.GetDevices_Internal
   - UnityEngine.XR.InputDevices.GetDeviceSerialNumber
   - UnityEngine.XR.InputDevices.IsDeviceValid
   - UnityEngine.XR.InputDevices.TryGetFeatureUsages
@@ -58,6 +58,7 @@ MonoBehaviour:
   - UnityEngine.XR.XRInputSubsystem.GetSupportedTrackingOriginModes
   - UnityEngine.XR.XRInputSubsystem.GetTrackingOriginMode
   - UnityEngine.XR.XRInputSubsystem.TryGetBoundaryPoints_AsList
+  - UnityEngine.XR.XRInputSubsystem.TryGetDeviceIds_AsList
   - UnityEngine.XR.XRInputSubsystem.TryRecenter
   - UnityEngine.XR.XRInputSubsystem.TrySetTrackingOriginMode
   - UnityEngine.XR.XRInputSubsystem._instance
