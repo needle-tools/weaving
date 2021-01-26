@@ -263,6 +263,7 @@ namespace needle.Weaver
                 catch (Exception e)
                 {
                     Debug.LogErrorFormat("Failed to run weaver {0} on {1}: {2}", weaver.PrettyName(), assemblyPath, e);
+                    Debug.LogException(e);
                 }
             }
 

@@ -5,6 +5,7 @@ using System.Reflection;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
+using Mono.Collections.Generic;
 using Mono.Reflection;
 using UnityEngine;
 using Instruction = Mono.Cecil.Cil.Instruction;
@@ -139,10 +140,23 @@ namespace needle.Weaver
 								case MethodReference mr:
 									try
 									{
+										if (mr.ContainsGenericParameter)
+										{
+											foreach (var gp in mr.GenericParameters)
+											{
+												if (gp.HasConstraints)
+												{
+													foreach (var c in gp.Constraints)
+													{
+														c.ConstraintType = module.ImportReference(c.ConstraintType);
+													}
+												}
+											}
+										}
 										// var @ref = mr.DeclaringType?.ResolveGenericParameters(method);
 										// if(@ref != null)
 										// {var res = module.ImportReference(@ref);}
-										inst.Operand = module.ImportReference(mr);
+										inst.Operand = module.ImportReference(mr, method);
 										ResolveReferencesToSelf(method, patch, inst);
 									}
 									catch (Exception e)
@@ -188,6 +202,16 @@ namespace needle.Weaver
 			}
 
 			return false;
+		}
+
+		private class Param : IGenericParameterProvider
+		{
+			public MetadataToken MetadataToken { get; set; }
+			public bool HasGenericParameters { get; }
+			public bool IsDefinition { get; }
+			public ModuleDefinition Module { get; }
+			public Collection<GenericParameter> GenericParameters { get; }
+			public GenericParameterType GenericParameterType { get; }
 		}
 		
 		private static void ResolveReferencesToSelf(MethodDefinition method, MemberInfo patch, Instruction instruction)

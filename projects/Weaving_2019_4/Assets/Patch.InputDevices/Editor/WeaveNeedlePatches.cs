@@ -46,6 +46,7 @@ namespace Patch.InputDevices.Editor
 			var methods = Resolve<MethodInfo>(marked);
 			ModuleDefinition.ForEachMethod(def =>
 			{
+				if (def == null) return;
 				var res = TryFindPatchMember(def, methods);
 				var patch = res.patch;
 				if (patch == null) return;
