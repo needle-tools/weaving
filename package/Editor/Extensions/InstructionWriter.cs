@@ -140,19 +140,19 @@ namespace needle.Weaver
 								case MethodReference mr:
 									try
 									{
-										if (mr.ContainsGenericParameter)
-										{
-											foreach (var gp in mr.GenericParameters)
-											{
-												if (gp.HasConstraints)
-												{
-													foreach (var c in gp.Constraints)
-													{
-														c.ConstraintType = module.ImportReference(c.ConstraintType);
-													}
-												}
-											}
-										}
+										// if (mr.ContainsGenericParameter)
+										// {
+										// 	foreach (var gp in mr.GenericParameters)
+										// 	{
+										// 		if (gp.HasConstraints)
+										// 		{
+										// 			foreach (var c in gp.Constraints)
+										// 			{
+										// 				c.ConstraintType = module.ImportReference(c.ConstraintType);
+										// 			}
+										// 		}
+										// 	}
+										// }
 										// var @ref = mr.DeclaringType?.ResolveGenericParameters(method);
 										// if(@ref != null)
 										// {var res = module.ImportReference(@ref);}
@@ -170,7 +170,7 @@ namespace needle.Weaver
 									ResolveReferencesToSelf(method, patch, inst);
 									break;
 								case TypeReference tr:
-									inst.Operand = module.ImportReference(tr);
+									inst.Operand = module.ImportReference(tr, method);
 									ResolveReferencesToSelf(method, patch, inst);
 									break;
 							}
@@ -204,7 +204,7 @@ namespace needle.Weaver
 			return false;
 		}
 
-		private class Param : IGenericParameterProvider
+		private class Param : MethodReference, IGenericParameterProvider
 		{
 			public MetadataToken MetadataToken { get; set; }
 			public bool HasGenericParameters { get; }
@@ -212,6 +212,14 @@ namespace needle.Weaver
 			public ModuleDefinition Module { get; }
 			public Collection<GenericParameter> GenericParameters { get; }
 			public GenericParameterType GenericParameterType { get; }
+
+			public Param(string name, TypeReference returnType) : base(name, returnType)
+			{
+			}
+
+			public Param(string name, TypeReference returnType, TypeReference declaringType) : base(name, returnType, declaringType)
+			{
+			}
 		}
 		
 		private static void ResolveReferencesToSelf(MethodDefinition method, MemberInfo patch, Instruction instruction)
