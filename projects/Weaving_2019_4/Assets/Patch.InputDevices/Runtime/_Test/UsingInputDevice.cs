@@ -12,12 +12,15 @@ namespace _Tests.Weaver_InputDevice
     [ExecuteInEditMode]
     public class UsingInputDevice : MonoBehaviour
     {
+        public bool createDevice = true;
         public Text Text;
 
         private MockInputDevice device;
 
         private void Start()
         {
+            if (!createDevice) return;
+            
             device = new MockInputDevice("MyHeadset", XRNode.CenterEye);
             device.SerialNumber = "0.0.42";
             device.Manufacturer = "Needle";
