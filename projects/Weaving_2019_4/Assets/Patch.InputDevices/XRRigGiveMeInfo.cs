@@ -25,7 +25,18 @@ public class XRRigGiveMeInfo : MonoBehaviour
     {
         // reflect in
         if(subsystems == null) subsystems = typeof(XRRig).GetField("s_InputSubsystems", (BindingFlags) (-1));
+        if (subsystems == null)
+        {
+            output.text = "Didn't find field s_InputSubsystems";
+            return;
+        }
         var subsystem = (List<XRInputSubsystem>) subsystems.GetValue(null);
-        output.text = subsystem.Count + "\n" + string.Join("\n", subsystem.Select(x => "running: " + x.running + ", descriptor: " + x.subsystemDescriptor.id));
+        if (subsystem == null)
+        {
+            output.text = "Subsystems list is null";
+            return;
+        }
+        
+        output.text = subsystem.Count + "\n" + string.Join("\n", subsystem.Select(x => "running: " + x?.running + ", descriptor: " + x?.subsystemDescriptor?.id));
     }
 }
