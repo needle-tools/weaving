@@ -18,14 +18,30 @@ namespace _Tests.Weaver_InputDevice
 
         private void Start()
         {
-            device = new MockInputDevice("MyHeadset", XRNode.CenterEye);
+            var deviceName = "NeedleDevice";
+            device = new MockInputDevice(deviceName, XRNode.Head);
             device.SerialNumber = "0.0.42";
             device.Manufacturer = "Needle";
             var start = Camera.main.transform.position;
-            device.AddUsage(new InputFeatureUsage<float>("test"), () => Random.value);
-            device.AddUsage(new InputFeatureUsage<Vector3>("test"), () => Random.insideUnitSphere);
+            device.AddUsage(new InputFeatureUsage<bool>("IsTracked"), () => true);
+            device.AddUsage(new InputFeatureUsage<InputTrackingState>("TrackingState"), () => InputTrackingState.Position | InputTrackingState.Rotation);
+            device.AddUsage(new InputFeatureUsage<Vector3>("DevicePosition"), () => start + Random.insideUnitSphere);
+            device.AddUsage(new InputFeatureUsage<Vector3>("EyePosition"), () => start + Random.insideUnitSphere);
+            device.AddUsage(new InputFeatureUsage<Quaternion>("DeviceRotation"), () => Quaternion.identity);
+            device.AddUsage(new InputFeatureUsage<Quaternion>("EyeRotation"), () => Quaternion.identity);
+            
+            
+            device.AddUsage(new InputFeatureUsage<bool>("deviceIsTracked"), () => true);
+            device.AddUsage(new InputFeatureUsage<InputTrackingState>("deviceTrackingState"), () => InputTrackingState.All);
+            device.AddUsage(new InputFeatureUsage<Vector3>("devicePosition"), () => start + Random.insideUnitSphere * .3f);
+            device.AddUsage(new InputFeatureUsage<Quaternion>("deviceRotation"), () => Quaternion.identity);
             device.AddUsage(new InputFeatureUsage<Vector3>("centerEyePosition"), () => start + Random.insideUnitSphere * .3f);
-            device.DeviceCharacteristics = InputDeviceCharacteristics.TrackedDevice | InputDeviceCharacteristics.HeadMounted;
+            device.AddUsage(new InputFeatureUsage<Quaternion>("centerEyeRotation"), () => Quaternion.identity);
+            device.AddUsage(new InputFeatureUsage<Vector3>("leftEyePosition"), () => start + Random.insideUnitSphere * .3f);
+            device.AddUsage(new InputFeatureUsage<Quaternion>("leftEyeRotation"), () => Quaternion.identity);
+            device.AddUsage(new InputFeatureUsage<Vector3>("rightEyePosition"), () => start + Random.insideUnitSphere * .3f);
+            device.AddUsage(new InputFeatureUsage<Quaternion>("rightEyeRotation"), () => Quaternion.identity);
+            device.DeviceCharacteristics = InputDeviceCharacteristics.TrackedDevice | InputDeviceCharacteristics.HeadMounted | InputDeviceCharacteristics.Camera;
             XRInputSubsystem_Patch.RegisterInputDevice(device);
         }
 
@@ -48,21 +64,17 @@ namespace _Tests.Weaver_InputDevice
                 Text.text = "Frame=" + Time.frameCount;
                 Text.text += $"\nFound {list.Count} InputDevices";
                 Text.text += "\n Has Head device... " + headDevice.name + " = " + headDevice.isValid + ", " + headDevice.manufacturer + ", " + headDevice.serialNumber;
-                var val = headDevice.TryGetFeatureValue(new InputFeatureUsage<float>("test"), out var res);
-                Text.text += "\n" + "float: " + res + " == " + val;
-                val = headDevice.TryGetFeatureValue(new InputFeatureUsage<Vector3>("test"), out var v3);
+      
+                var val = headDevice.TryGetFeatureValue(new InputFeatureUsage<Vector3>("centerEyePosition"), out var v3);
                 Text.text += "\n" + "vec3: " + v3 + " == " + val;
                 if (headDevice.subsystem != null)
                 {
                     headDevice.subsystem.boundaryChanged += b => lastFrameReceivedEvent = Time.frameCount;
-                    var st = headDevice.subsystem.TrySetTrackingOriginMode(Random.value > .5 ? TrackingOriginModeFlags.Floor : TrackingOriginModeFlags.Device);
-                    Text.text += "\n" + "set origin mode? " + st + ", subsystem is: " + headDevice.subsystem.GetType();
+                    // var st = headDevice.subsystem.TrySetTrackingOriginMode(Random.value > .5 ? TrackingOriginModeFlags.Floor : TrackingOriginModeFlags.Device);
+                    // Text.text += "\n" + "set origin mode? " + st + ", subsystem is: " + headDevice.subsystem.GetType();
                     Text.text += "\n" + "internal tracking mode: " + (headDevice.subsystem as XRInputSubsystem_Patch)?._origin.ToString();
                     Text.text += "\n" + "last boundary event frame " + lastFrameReceivedEvent;
                     Text.text += "\n" + "supported tracking mode: " + headDevice.subsystem.GetSupportedTrackingOriginModes();
-                    var isSupported = (headDevice.subsystem.GetSupportedTrackingOriginModes() &
-                                       (TrackingOriginModeFlags.Floor | TrackingOriginModeFlags.Unknown)) == 0;
-                    Text.text += "\n" + "isSupported: " + isSupported;
                     
                 }
 
