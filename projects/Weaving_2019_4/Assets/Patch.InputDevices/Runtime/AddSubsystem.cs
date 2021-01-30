@@ -3,23 +3,29 @@ using System.Reflection;
 using needle.Weavers.InputDevicesPatch;
 using UnityEngine;
 
-namespace _Tests.Weaver_InputDevice
+namespace Patch.InputDevices.Runtime
 {
-	public static class ReflectIntegratedSubsystems
+	public static class AddSubsystem
 	{
 		[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
 		private static void Init()
 		{
+#if UNITY_EDITOR
+			if (Application.isPlaying)
+			{
+				Debug.Log("Would inject subsystem in webgl build but not in editor");
+				return;
+			}
+#endif
 			var type = typeof(SubsystemManager);
 			var field = type.GetField("s_IntegratedSubsystems", (BindingFlags) ~0);
-			var list = field.GetValue(null) as List<IntegratedSubsystem>;
+			var list = field?.GetValue(null) as List<IntegratedSubsystem>;
 			var my = XRInputSubsystem_Patch.Instance;
-			list.Add(my);
+			list?.Add(my);
 
 			var ml = new List<ISubsystem>();
 			SubsystemManager.GetInstances(ml);
-			Debug.Log(ml.Count);
-			foreach (var s in ml) Debug.Log(s);
+			if (ml.Count <= 0) Debug.LogError("Failed adding Subsystem for webgl support");
 		}
 	}
 }
