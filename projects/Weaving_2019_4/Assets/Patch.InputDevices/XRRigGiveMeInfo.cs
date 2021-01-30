@@ -47,8 +47,18 @@ public class XRRigGiveMeInfo : MonoBehaviour
         }
         
         output.text = 
-            "initialized: " + initialized.GetValue(rig) + 
-            ", count: " + subsystem.Count + "\n" + 
+            "initialized: " + initialized.GetValue(rig) + "\n" + 
+            #if ENABLE_VR
+            "WE HAVE VR\n" +
+            #else
+            "NO VR\n" +
+            #endif
+            #if ENABLE_AR
+            "WE HAVE AR\n" + 
+            #else
+            "NO AR\n" + 
+            #endif
+            "count: " + subsystem.Count + "\n" + 
             string.Join("\n", subsystem.Select(x => "running: " + x?.running + ", descriptor: " + x?.subsystemDescriptor?.id));
     }
 }
