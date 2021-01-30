@@ -19,16 +19,17 @@ namespace needle.Weavers.InputDevicesPatch
 			Disconnected,
 			ConfigChange,
 		}
-		
+
 		public static void DoInvokeConnectionEvent(ulong deviceId, ConnectionChangeType change)
 		{
 			var m = typeof(InputDevices).GetMethod("InvokeConnectionEvent", (BindingFlags) ~0);
 			m?.Invoke(null, new object[] {deviceId, change});
 			if (m == null) Debug.LogError("Failed to reflect invoke connection event");
 		}
-		
+
 		private static InputDevice GetDeviceAtXRNode(XRNode node)
 		{
+			// Debug.Log("GetDeviceAtXRNode: " + node);
 			var mock = _inputDevices.FirstOrDefault(d => d.Node == node);
 			if (mock == null || !XRInputSubsystem_Patch.Instance.TryGetInputDevices(_buffer))
 				return new InputDevice();
@@ -37,6 +38,7 @@ namespace needle.Weavers.InputDevicesPatch
 
 		private static void GetDevices_Internal(List<InputDevice> inputDevices)
 		{
+			// Debug.Log("GetDevices_Internal");
 			XRInputSubsystem_Patch.Instance.TryGetInputDevices(inputDevices);
 		}
 
@@ -223,8 +225,8 @@ namespace needle.Weavers.InputDevicesPatch
 			value = default;
 			return dev != null && dev.TryGetUsage(usage, out value);
 		}
-		
-		
+
+
 		private static bool IsDeviceValid(ulong deviceId)
 		{
 			return _inputDevices.Any(d => deviceId == d.Id);
@@ -237,8 +239,6 @@ namespace needle.Weavers.InputDevicesPatch
 
 		internal static string GetDeviceSerialNumber(ulong deviceId) => XRInputSubsystem_Patch.TryGetDevice(deviceId)?.SerialNumber;
 
-		internal static InputDeviceCharacteristics GetDeviceCharacteristics(ulong deviceId) =>
-			XRInputSubsystem_Patch.TryGetDevice(deviceId)?.DeviceCharacteristics 
-			?? InputDeviceCharacteristics.None;
+		internal static InputDeviceCharacteristics GetDeviceCharacteristics(ulong deviceId) => XRInputSubsystem_Patch.TryGetDevice(deviceId).DeviceCharacteristics;
 	}
 }

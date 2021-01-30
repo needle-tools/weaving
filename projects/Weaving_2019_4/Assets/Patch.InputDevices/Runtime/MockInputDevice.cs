@@ -38,6 +38,7 @@ namespace needle.Weavers.InputDevicesPatch
 		
 		public bool TryGetUsage<T>(string name, out T value)
 		{
+			// Debug.Log("try Get usage " + name);
 			foreach (var kvp in _registry)
 			{
 				var usage = kvp.Key;

@@ -4,7 +4,6 @@ using System.Linq;
 using needle.Weaver;
 using UnityEngine;
 using UnityEngine.XR;
-using Random = UnityEngine.Random;
 
 // disable hide member warning
 #pragma warning disable 108,114
@@ -18,6 +17,7 @@ namespace needle.Weavers.InputDevicesPatch
 		public static XRInputSubsystem_Patch Instance => _instance.Value;
 
 		public static TrackingOriginModeFlags SupportedTrackingOriginMode = TrackingOriginModeFlags.Floor;
+		public static TrackingOriginModeFlags CurrentTrackingMode = TrackingOriginModeFlags.Device;
 
 		public uint Index { get; set; }
 
@@ -31,7 +31,7 @@ namespace needle.Weavers.InputDevicesPatch
 			}
 		}
 		
-		internal static List<MockInputDevice> InputDevices = new List<MockInputDevice>();
+		internal static readonly List<MockInputDevice> InputDevices = new List<MockInputDevice>();
 
 		public static MockInputDevice TryGetDevice(ulong id) => InputDevices.FirstOrDefault(d => d.Id == id);
 
@@ -58,18 +58,17 @@ namespace needle.Weavers.InputDevicesPatch
 
 		public bool TryRecenter()
 		{
-			return false;
-		}
-
-		public TrackingOriginModeFlags _origin;
-
-		public bool TrySetTrackingOriginMode(TrackingOriginModeFlags origin)
-		{
-			this._origin = origin;
 			return true;
 		}
 
-		public TrackingOriginModeFlags GetTrackingOriginMode() => _origin;
+
+		public bool TrySetTrackingOriginMode(TrackingOriginModeFlags origin)
+		{
+			CurrentTrackingMode = origin;
+			return true;
+		}
+
+		public TrackingOriginModeFlags GetTrackingOriginMode() => CurrentTrackingMode;
 
 		public TrackingOriginModeFlags GetSupportedTrackingOriginModes() => SupportedTrackingOriginMode;
 

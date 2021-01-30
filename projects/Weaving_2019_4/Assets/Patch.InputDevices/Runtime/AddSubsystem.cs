@@ -26,6 +26,7 @@ namespace Patch.InputDevices.Runtime
 			var ml = new List<ISubsystem>();
 			SubsystemManager.GetInstances(ml);
 			if (ml.Count <= 0) Debug.LogError("Failed adding Subsystem for webgl support");
+			else Debug.Log("Added subsystem successfully");
 		}
 	}
 }
