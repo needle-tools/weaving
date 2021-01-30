@@ -15,7 +15,7 @@ public class XRRigGiveMeInfo : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        FindObjectOfType<XRRig>();
+        rig = FindObjectOfType<XRRig>();
     }
 
     private FieldInfo subsystems, initialized;

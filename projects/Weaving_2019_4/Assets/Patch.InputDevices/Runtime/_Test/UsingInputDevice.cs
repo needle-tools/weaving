@@ -12,7 +12,6 @@ namespace _Tests.Weaver_InputDevice
 	[ExecuteInEditMode]
 	public class UsingInputDevice : MonoBehaviour
 	{
-		public bool createDevice = true;
 		public Text Text;
 
 		private static MockInputDevice device;

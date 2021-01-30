@@ -46,9 +46,36 @@ namespace needle.Weavers.InputDevicesPatch
 		};
 
 		
+		private readonly Lazy<XRInputSubsystemDescriptor> descriptor = new Lazy<XRInputSubsystemDescriptor>(() =>
+		{
+			var desc = new XRInputSubsystemDescriptor();
+			Debug.Log("Creating a subsystem descriptor");
+			// desc.Create();
+			return desc;
+		});
+		
 		// implementation:
 
+
+		public XRInputSubsystemDescriptor subsystemDescriptor => descriptor.Value;
+
+		
 		internal uint GetIndex() => Index;
+
+		public void Start()
+		{
+			Debug.Log("Starting");
+		}
+
+		public void Stop()
+		{
+			Debug.Log("Stopping");
+		}
+		
+		public void Destroy()
+		{
+			
+		}
 		
 		internal void TryGetDeviceIds_AsList(List<ulong> deviceIds)
 		{
@@ -85,12 +112,12 @@ namespace needle.Weavers.InputDevicesPatch
 
 		private static void InvokeTrackingOriginUpdatedEvent(IntPtr internalPtr)
 		{
-			Instance.trackingOriginUpdated?.Invoke(Instance);
+			// Instance.trackingOriginUpdated?.Invoke(internalPtr);
 		}
 		
 		private static void InvokeBoundaryChangedEvent(IntPtr internalPtr)
 		{
-			Instance.boundaryChanged?.Invoke(Instance);
+			// Instance.boundaryChanged?.Invoke(Instance);
 		}
 
 
