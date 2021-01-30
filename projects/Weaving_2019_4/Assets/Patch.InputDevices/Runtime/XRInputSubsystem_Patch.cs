@@ -32,8 +32,8 @@ namespace needle.Weavers.InputDevicesPatch
 		internal static List<MockInputDevice> InputDevices = new List<MockInputDevice>();
 
 		public static MockInputDevice TryGetDevice(ulong id) => InputDevices.FirstOrDefault(d => d.Id == id);
-		
-		
+
+
 		
 		public List<Vector3> Bounds = new List<Vector3>()
 		{
@@ -69,7 +69,7 @@ namespace needle.Weavers.InputDevicesPatch
 
 		public TrackingOriginModeFlags GetTrackingOriginMode() => _origin;
 
-		public TrackingOriginModeFlags GetSupportedTrackingOriginModes() => (TrackingOriginModeFlags) ~0;
+		public TrackingOriginModeFlags GetSupportedTrackingOriginModes() => TrackingOriginModeFlags.Device;
 
 		private bool TryGetBoundaryPoints_AsList(List<Vector3> boundaryPoints)
 		{

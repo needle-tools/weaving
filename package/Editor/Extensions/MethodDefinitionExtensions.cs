@@ -30,17 +30,18 @@ namespace needle.Weaver
 			if (mrt != null)
 			{
 				var rt = mrt.ReturnType;
-				var tempVar = new VariableDefinition(rt);
-				method.Body.Variables.Add(tempVar);
 				switch (rt.Name)
 				{
 					case "String":
 						processor.Emit(OpCodes.Ldstr, "");
 						break;
 					default:
+						var tempVar = new VariableDefinition(rt);
+						method.Body.Variables.Add(tempVar);
 						processor.Emit(OpCodes.Ldloc, tempVar);
 						break;
 					case "Void":
+						processor.Emit(OpCodes.Nop);
 						break;
 				}
 			}
