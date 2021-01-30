@@ -18,7 +18,7 @@ namespace _Tests.Weaver_InputDevice
 
         private void Start()
         {
-            device = new MockInputDevice("MyHeadset", XRNode.Head);
+            device = new MockInputDevice("MyHeadset", XRNode.CenterEye);
             device.SerialNumber = "0.0.42";
             device.Manufacturer = "Needle";
             var start = Camera.main.transform.position;
@@ -59,6 +59,11 @@ namespace _Tests.Weaver_InputDevice
                     Text.text += "\n" + "set origin mode? " + st + ", subsystem is: " + headDevice.subsystem.GetType();
                     Text.text += "\n" + "internal tracking mode: " + (headDevice.subsystem as XRInputSubsystem_Patch)?._origin.ToString();
                     Text.text += "\n" + "last boundary event frame " + lastFrameReceivedEvent;
+                    Text.text += "\n" + "supported tracking mode: " + headDevice.subsystem.GetSupportedTrackingOriginModes();
+                    var isSupported = (headDevice.subsystem.GetSupportedTrackingOriginModes() &
+                                       (TrackingOriginModeFlags.Floor | TrackingOriginModeFlags.Unknown)) == 0;
+                    Text.text += "\n" + "isSupported: " + isSupported;
+                    
                 }
 
 

@@ -17,6 +17,8 @@ namespace needle.Weavers.InputDevicesPatch
 		private static readonly Lazy<XRInputSubsystem_Patch> _instance = new Lazy<XRInputSubsystem_Patch>(() => new XRInputSubsystem_Patch());
 		public static XRInputSubsystem_Patch Instance => _instance.Value;
 
+		public static TrackingOriginModeFlags SupportedTrackingOriginMode = TrackingOriginModeFlags.Floor;
+
 		public uint Index { get; set; }
 
 		public static void RegisterInputDevice(MockInputDevice dev)
@@ -69,7 +71,7 @@ namespace needle.Weavers.InputDevicesPatch
 
 		public TrackingOriginModeFlags GetTrackingOriginMode() => _origin;
 
-		public TrackingOriginModeFlags GetSupportedTrackingOriginModes() => TrackingOriginModeFlags.Device;
+		public TrackingOriginModeFlags GetSupportedTrackingOriginModes() => SupportedTrackingOriginMode;
 
 		private bool TryGetBoundaryPoints_AsList(List<Vector3> boundaryPoints)
 		{
