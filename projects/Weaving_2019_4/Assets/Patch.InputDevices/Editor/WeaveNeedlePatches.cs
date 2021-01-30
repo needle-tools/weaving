@@ -20,9 +20,6 @@ namespace Patch.InputDevices.Editor
 			// TODO: warn if any typed marked with patch attribute was never used
 			
 			Debug.Log("Found " + marked.Count + " marked types \n" + string.Join("\n", marked) + "\n");
-
-			Debug.Log(ModuleDefinition);
-			// if(ModuleDefinition.Name.StartsWith("XR")) 
 			
 			var failed = "";
 			var cnt = 0;
