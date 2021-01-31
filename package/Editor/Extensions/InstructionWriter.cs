@@ -60,46 +60,6 @@ namespace needle.Weaver
 						// TODO: ensure parameter and generics match 
 						if(!method.DoSignaturesMatch(pm)) continue;
 						
-
-						// foreach (var param in method.Parameters) Debug.Log(param);
-						// if (!method.IsStatic)
-						// {	
-						// 	method.Parameters.Add(new ParameterDefinition("this", ParameterAttributes.None, new TypeReference(method.DeclaringType.Namespace, method.DeclaringType.Name, module, module)));
-						// }
-						
-						
-						// method.GenericParameters.Clear();
-						foreach (var gv in pm.GenericParameters)
-						{
-							
-							try
-							{
-								// var t = gv.Resolve();
-								// var tr = module.ImportReference(gv);
-								// method.GenericParameters.Add(new GenericParameter(tr));
-							}
-							catch (Exception e)
-							{
-								Debug.LogError("Error adding generic variable " + gv + " for " + method + "\n" + gv?.Type + "\n" + pm.CaptureILString());
-								throw e;
-							}
-						}
-						
-						// method.Parameters.Clear();
-						// foreach (var v in pm.Parameters)
-						// {
-						// 	try
-						// 	{
-						// 		var tr = module.ImportReference(v.ParameterType);
-						// 		method.Parameters.Add(new ParameterDefinition(tr));
-						// 	}
-						// 	catch (Exception e)
-						// 	{
-						// 		Debug.LogError("Error adding parameter " + v + " for " + method + "\n" + v?.ParameterType + "\n");
-						// 		throw e;
-						// 	}
-						// }
-
 						method.Body.Variables.Clear();
 						foreach(var v in pm.Body.Variables)
 						{
@@ -115,7 +75,7 @@ namespace needle.Weaver
 							catch (Exception e)
 							{
 								Debug.LogError("Error adding variable " + v + " for " + method + "\nVariableType: " + v.VariableType + "\n");
-								throw e;
+								throw;
 							}
 						}
 						
@@ -162,7 +122,7 @@ namespace needle.Weaver
 									catch (Exception e)
 									{
 										Debug.LogError("Failed handling operand " + mr + "\n" + method);
-										throw e;
+										throw;
 									}
 									break;
 								case Type t:
