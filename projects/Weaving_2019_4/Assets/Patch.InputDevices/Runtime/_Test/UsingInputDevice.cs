@@ -15,6 +15,7 @@ namespace _Tests.Weaver_InputDevice
 		public Text Text;
 
 		private static MockInputDevice device;
+		private static Quaternion _rotation = Quaternion.identity;
 
 		[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSplashScreen)]
 		private static void Init()
@@ -36,8 +37,8 @@ namespace _Tests.Weaver_InputDevice
 			device.AddUsage(new InputFeatureUsage<Quaternion>("leftEyeRotation"), () => Random.rotation, XRNode.LeftEye);
 			device.AddUsage(new InputFeatureUsage<Vector3>("rightEyePosition"), () => Random.insideUnitSphere * .3f, XRNode.RightEye);
 			device.AddUsage(new InputFeatureUsage<Quaternion>("rightEyeRotation"), () => Random.rotation, XRNode.RightEye);
-			device.AddUsage(new InputFeatureUsage<Vector3>("centerEyePosition"), () => Random.insideUnitSphere * .3f, XRNode.CenterEye);
-			device.AddUsage(new InputFeatureUsage<Quaternion>("centerEyeRotation"), () => Random.rotation, XRNode.CenterEye);
+			device.AddUsage(new InputFeatureUsage<Vector3>("centerEyePosition"), () => Vector3.LerpUnclamped(Vector3.zero, Vector3.up, Mathf.Sin(Time.time)), XRNode.CenterEye);
+			device.AddUsage(new InputFeatureUsage<Quaternion>("centerEyeRotation"), () => _rotation, XRNode.CenterEye);
 			
 			XRInputSubsystem_Patch.RegisterInputDevice(device);
 			XRInputSubsystem_Patch.Instance.Start();
@@ -45,6 +46,7 @@ namespace _Tests.Weaver_InputDevice
 
 		private void Update()
 		{
+			_rotation = Quaternion.Lerp(Quaternion.Euler(0,-20, 0), Quaternion.Euler(0,20,0), Mathf.Sin(Time.time) * .5f + .5f);
 			PrintDeviceList();
 		}
 

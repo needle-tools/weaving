@@ -92,8 +92,7 @@ namespace needle.Weavers.InputDevicesPatch
 			foreach (var node in _nodes)
 			{
 				state.nodeType = node.Key;
-				var dels = node.Value;
-				foreach (var del in dels)
+				foreach (var del in node.Value)
 				{
 					try
 					{
@@ -107,7 +106,6 @@ namespace needle.Weavers.InputDevicesPatch
 								state.rotation = rot;
 								break;
 						}
-
 					}
 					catch (Exception e)
 					{
