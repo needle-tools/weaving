@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
@@ -27,10 +28,22 @@ namespace needle.Weaver
 		{
 		}
 
+		private static readonly IList<IPatchGUIProvider> _guiProviders = new List<IPatchGUIProvider>();
+
+		public static void Register(IPatchGUIProvider prov)
+		{
+			if (prov is null) return;
+			if (!_guiProviders.Contains(prov)) _guiProviders.Add(prov);
+		}
 
 		private static WeaverSettings Settings => WeaverSettings.instance;
 		private Vector2 scroll;
-		private bool patchesFoldout = false;
+
+		private bool patchesFoldout
+		{
+			get => SessionState.GetBool("Needle.PatchesFoldout", false);
+			set => SessionState.SetBool("Needle.PatchesFoldout", value);
+		}
 
 		public override void OnGUI(string searchContext)
 		{
@@ -40,10 +53,23 @@ namespace needle.Weaver
 
 			scroll = EditorGUILayout.BeginScrollView(scroll);
 			EditorGUILayout.BeginVertical();
+			Settings.PatchOnBuild = EditorGUILayout.ToggleLeft("Patch On Build", Settings.PatchOnBuild);
 
-			Settings.PatchOnBuild = EditorGUILayout.ToggleLeft("Automatically Patch On Build", Settings.PatchOnBuild);
-			GUILayout.Space(10);
 			DrawPatchesGUI();
+			GUILayout.Space(10);
+
+			foreach (var gui in _guiProviders)
+			{
+				try
+				{
+					EditorGUILayout.LabelField(ObjectNames.NicifyVariableName(gui.GetType().Name), EditorStyles.boldLabel);
+					gui.OnDrawGUI();
+				}
+				catch (Exception e)
+				{
+					Debug.LogException(e);
+				}
+			}
 
 			EditorGUILayout.EndVertical();
 			GUILayout.Space(20);
@@ -94,13 +120,17 @@ namespace needle.Weaver
 
 		private void DrawPatchesGUI()
 		{
+			EditorGUILayout.BeginHorizontal();
 			EditorGUILayout.LabelField("Needle Patches", EditorStyles.boldLabel);
-			
+			// GUILayout.FlexibleSpace();
+			EditorGUILayout.EndHorizontal();
+
 			var foldoutText = "Patch Methods";
 			if (byName.Count <= 0)
 			{
 				foldoutText += " <Will load on open>";
 			}
+
 			foldoutText += " (Disabled: " + Settings.DisabledPatches.Count + ")";
 			EditorGUILayout.BeginHorizontal();
 			patchesFoldout = EditorGUILayout.Foldout(patchesFoldout, foldoutText, true);
@@ -114,22 +144,25 @@ namespace needle.Weaver
 					Settings.DisabledPatches.Clear();
 					Settings.Save();
 				}
+
 				EditorGUI.EndDisabledGroup();
 				if (GUILayout.Button("None"))
 				{
 					Undo.RecordObject(Settings, "Disable patches");
-					foreach(var etr in byName.Values.SelectMany(p => p.Patches)) Settings.SetPatchSettingState(etr, false);
+					foreach (var etr in byName.Values.SelectMany(p => p.Patches)) Settings.SetPatchSettingState(etr, false);
 					Settings.Save();
 				}
+
 				if (GUILayout.Button("Invert"))
 				{
 					Undo.RecordObject(Settings, "Invert patches");
-					foreach(var etr in byName.Values.SelectMany(p => p.Patches)) Settings.SetPatchSettingState(etr, Settings.IsDisabled(etr));
+					foreach (var etr in byName.Values.SelectMany(p => p.Patches)) Settings.SetPatchSettingState(etr, Settings.IsDisabled(etr));
 					Settings.Save();
 				}
 			}
+
 			EditorGUILayout.EndHorizontal();
-			
+
 			if (patchesFoldout)
 			{
 				EditorGUI.indentLevel++;
@@ -167,6 +200,7 @@ namespace needle.Weaver
 
 						Settings.Save();
 					}
+
 					if (GUILayout.Button("None"))
 					{
 						Undo.RecordObject(Settings, "Disable all " + name);
@@ -177,6 +211,7 @@ namespace needle.Weaver
 
 						Settings.Save();
 					}
+
 					if (GUILayout.Button("Invert"))
 					{
 						Undo.RecordObject(Settings, "Invert Patches state " + name);

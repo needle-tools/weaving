@@ -7,6 +7,8 @@ using UnityEditor;
 
 namespace needle.Weaver
 {
+	// TODO: add something like category or namespace to have multiple patches for the same method (e.g. for webgl we patch it like this and for standalone like this)
+	
 	public static class PatchMethodDatabase
 	{
 		public static IReadOnlyList<Patch> AllPatchedMethods() => _allPatchedMethods.Value;

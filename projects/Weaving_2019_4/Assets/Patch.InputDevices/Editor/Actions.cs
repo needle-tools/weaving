@@ -4,6 +4,7 @@ using System.Linq;
 using Mono.Cecil;
 using needle.Weaver;
 using UnityEditor;
+using UnityEngine;
 
 namespace Fody.Weavers.InputDeviceWeaver
 {
