@@ -102,12 +102,12 @@ namespace needle.Weavers.InputDevicesPatch
 
 		private static void InvokeTrackingOriginUpdatedEvent(IntPtr internalPtr)
 		{
-			// Instance.trackingOriginUpdated?.Invoke(internalPtr);
+			Instance.trackingOriginUpdated?.Invoke(Instance);
 		}
 		
 		private static void InvokeBoundaryChangedEvent(IntPtr internalPtr)
 		{
-			// Instance.boundaryChanged?.Invoke(Instance);
+			Instance.boundaryChanged?.Invoke(Instance);
 		}
 
 
