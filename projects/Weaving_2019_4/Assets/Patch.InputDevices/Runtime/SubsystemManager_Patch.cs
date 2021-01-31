@@ -18,7 +18,7 @@ namespace needle.Weavers.InputDevicesPatch
 
 		internal static void StaticConstructScriptingClassMap()
 		{
-			Debug.Log("YO");
+			Debug.Log(nameof(StaticConstructScriptingClassMap));
 		}
 
 	}

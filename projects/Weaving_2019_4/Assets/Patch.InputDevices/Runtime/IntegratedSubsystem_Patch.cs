@@ -13,29 +13,29 @@ namespace needle.Weavers.InputDevicesPatch
 	[NeedlePatch(typeof(IntegratedSubsystem))]
 	internal class IntegratedSubsystem_Patch : IntegratedSubsystem
 	{
-		private bool isRunning;
-		internal ISubsystemDescriptor m_SubsystemDescriptor;
-
-		public void Start()
-		{
-			Debug.Log("Starting " + this);
-			isRunning = true;
-			m_SubsystemDescriptor = new XRInputSubsystemDescriptor();
-		}
-
-		public void Stop()
-		{
-			isRunning = false;
-		}
-
-		public void Destroy()
-		{
-			isRunning = false;
-		}
-
-
-		internal bool valid => true;
-
-		internal bool IsRunning() => isRunning;
+		// private bool isRunning;
+		// internal ISubsystemDescriptor m_SubsystemDescriptor;
+		//
+		// public void Start()
+		// {
+		// 	Debug.Log("Starting " + this);
+		// 	isRunning = true;
+		// 	m_SubsystemDescriptor = new XRInputSubsystemDescriptor();
+		// }
+		//
+		// public void Stop()
+		// {
+		// 	isRunning = false;
+		// }
+		//
+		// public void Destroy()
+		// {
+		// 	isRunning = false;
+		// }
+		//
+		//
+		// internal bool valid => true;
+		//
+		// internal bool IsRunning() => isRunning;
 	}
 }

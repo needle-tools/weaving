@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using needle.Weaver;
 using UnityEngine;
 using UnityEngine.XR;
@@ -40,15 +41,24 @@ namespace needle.Weavers.InputDevicesPatch
 		internal uint GetIndex() => Index;
 
 		internal ISubsystemDescriptor m_SubsystemDescriptor;
+		
+		
+		internal bool valid => true;
+
+		internal bool IsRunning() => isRunning;
+
+		private bool isRunning;
 
 		public void Start()
 		{
-			Debug.Log("Starting2 " + this);
+			Debug.Log("Starting " + this);
+			isRunning = true;
 			m_SubsystemDescriptor = new XRInputSubsystemDescriptor();
 		}
 
 		public void Stop()
 		{
+			isRunning = false;
 			Debug.Log("Stopping");
 		}
 		

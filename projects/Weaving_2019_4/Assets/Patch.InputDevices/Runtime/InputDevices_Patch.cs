@@ -29,7 +29,6 @@ namespace needle.Weavers.InputDevicesPatch
 
 		private static InputDevice GetDeviceAtXRNode(XRNode node)
 		{
-			// Debug.Log("GetDeviceAtXRNode: " + node);
 			var mock = _inputDevices.FirstOrDefault(d => d.Node == node);
 			if (mock == null || !XRInputSubsystem_Patch.Instance.TryGetInputDevices(_buffer))
 				return new InputDevice();
@@ -38,7 +37,6 @@ namespace needle.Weavers.InputDevicesPatch
 
 		private static void GetDevices_Internal(List<InputDevice> inputDevices)
 		{
-			// Debug.Log("GetDevices_Internal");
 			XRInputSubsystem_Patch.Instance.TryGetInputDevices(inputDevices);
 		}
 

@@ -32,12 +32,12 @@ namespace _Tests.Weaver_InputDevice
 			device.AddUsage(new InputFeatureUsage<Vector3>("devicePosition"), () => Random.insideUnitSphere);
 			device.AddUsage(new InputFeatureUsage<Quaternion>("deviceRotation"), () => Random.rotation);
 
-			device.AddUsage(new InputFeatureUsage<Vector3>("leftEyePosition"), () => Random.insideUnitSphere * .3f);
-			device.AddUsage(new InputFeatureUsage<Quaternion>("leftEyeRotation"), () => Random.rotation);
-			device.AddUsage(new InputFeatureUsage<Vector3>("rightEyePosition"), () => Random.insideUnitSphere * .3f);
-			device.AddUsage(new InputFeatureUsage<Quaternion>("rightEyeRotation"), () => Random.rotation);
-			device.AddUsage(new InputFeatureUsage<Vector3>("centerEyePosition"), () => Random.insideUnitSphere * .3f);
-			device.AddUsage(new InputFeatureUsage<Quaternion>("centerEyeRotation"), () => Random.rotation);
+			device.AddUsage(new InputFeatureUsage<Vector3>("leftEyePosition"), () => Random.insideUnitSphere * .3f, XRNode.LeftEye);
+			device.AddUsage(new InputFeatureUsage<Quaternion>("leftEyeRotation"), () => Random.rotation, XRNode.LeftEye);
+			device.AddUsage(new InputFeatureUsage<Vector3>("rightEyePosition"), () => Random.insideUnitSphere * .3f, XRNode.RightEye);
+			device.AddUsage(new InputFeatureUsage<Quaternion>("rightEyeRotation"), () => Random.rotation, XRNode.RightEye);
+			device.AddUsage(new InputFeatureUsage<Vector3>("centerEyePosition"), () => Random.insideUnitSphere * .3f, XRNode.CenterEye);
+			device.AddUsage(new InputFeatureUsage<Quaternion>("centerEyeRotation"), () => Random.rotation, XRNode.CenterEye);
 			
 			XRInputSubsystem_Patch.RegisterInputDevice(device);
 			XRInputSubsystem_Patch.Instance.Start();
