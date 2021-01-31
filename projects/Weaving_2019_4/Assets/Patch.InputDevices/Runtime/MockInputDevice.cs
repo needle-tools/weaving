@@ -26,7 +26,7 @@ namespace needle.Weavers.InputDevicesPatch
 			this.Node = node;
 		}
 
-		public void AddUsage<T>(InputFeatureUsage<T> usage, Func<T> getValue, XRNode node = (XRNode) (-1))
+		public void AddFeature<T>(InputFeatureUsage<T> usage, Func<T> getValue, XRNode node = (XRNode) (-1))
 		{
 			var usg = (InputFeatureUsage) usage;
 			if (!_registry.ContainsKey(usg))

@@ -28,17 +28,17 @@ namespace _Tests.Weaver_InputDevice
 
 			XRInputSubsystem_Patch.SupportedTrackingOriginMode = TrackingOriginModeFlags.Device | TrackingOriginModeFlags.Floor;
 
-			device.AddUsage(new InputFeatureUsage<bool>("isTracked"), () => true);
-			device.AddUsage(new InputFeatureUsage<InputTrackingState>("trackingState"), () => InputTrackingState.Position | InputTrackingState.Rotation);
-			device.AddUsage(new InputFeatureUsage<Vector3>("devicePosition"), () => Random.insideUnitSphere);
-			device.AddUsage(new InputFeatureUsage<Quaternion>("deviceRotation"), () => Random.rotation);
+			device.AddFeature(new InputFeatureUsage<bool>("isTracked"), () => true);
+			device.AddFeature(new InputFeatureUsage<InputTrackingState>("trackingState"), () => InputTrackingState.Position | InputTrackingState.Rotation);
+			device.AddFeature(new InputFeatureUsage<Vector3>("devicePosition"), () => Random.insideUnitSphere);
+			device.AddFeature(new InputFeatureUsage<Quaternion>("deviceRotation"), () => Random.rotation);
 
-			device.AddUsage(new InputFeatureUsage<Vector3>("leftEyePosition"), () => Random.insideUnitSphere * .3f, XRNode.LeftEye);
-			device.AddUsage(new InputFeatureUsage<Quaternion>("leftEyeRotation"), () => Random.rotation, XRNode.LeftEye);
-			device.AddUsage(new InputFeatureUsage<Vector3>("rightEyePosition"), () => Random.insideUnitSphere * .3f, XRNode.RightEye);
-			device.AddUsage(new InputFeatureUsage<Quaternion>("rightEyeRotation"), () => Random.rotation, XRNode.RightEye);
-			device.AddUsage(new InputFeatureUsage<Vector3>("centerEyePosition"), () => Vector3.LerpUnclamped(Vector3.zero, Vector3.up, Mathf.Sin(Time.time)), XRNode.CenterEye);
-			device.AddUsage(new InputFeatureUsage<Quaternion>("centerEyeRotation"), () => _rotation, XRNode.CenterEye);
+			device.AddFeature(new InputFeatureUsage<Vector3>("leftEyePosition"), () => Random.insideUnitSphere * .3f, XRNode.LeftEye);
+			device.AddFeature(new InputFeatureUsage<Quaternion>("leftEyeRotation"), () => Random.rotation, XRNode.LeftEye);
+			device.AddFeature(new InputFeatureUsage<Vector3>("rightEyePosition"), () => Random.insideUnitSphere * .3f, XRNode.RightEye);
+			device.AddFeature(new InputFeatureUsage<Quaternion>("rightEyeRotation"), () => Random.rotation, XRNode.RightEye);
+			device.AddFeature(new InputFeatureUsage<Vector3>("centerEyePosition"), () => Vector3.LerpUnclamped(Vector3.zero, Vector3.up, Mathf.Sin(Time.time)), XRNode.CenterEye);
+			device.AddFeature(new InputFeatureUsage<Quaternion>("centerEyeRotation"), () => _rotation, XRNode.CenterEye);
 			
 			XRInputSubsystem_Patch.RegisterInputDevice(device);
 			XRInputSubsystem_Patch.Instance.Start();
