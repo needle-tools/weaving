@@ -72,7 +72,7 @@ namespace needle.Weaver
 								var nv = new VariableDefinition(module.ImportReference(type));
 								method.Body.Variables.Add(nv);
 							}
-							catch (Exception e)
+							catch (Exception)
 							{
 								Debug.LogError("Error adding variable " + v + " for " + method + "\nVariableType: " + v.VariableType + "\n");
 								throw;
@@ -119,7 +119,7 @@ namespace needle.Weaver
 										inst.Operand = module.ImportReference(mr, method);
 										ResolveReferencesToSelf(method, patch, inst);
 									}
-									catch (Exception e)
+									catch (Exception)
 									{
 										Debug.LogError("Failed handling operand " + mr + "\n" + method);
 										throw;
