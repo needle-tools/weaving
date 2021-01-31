@@ -37,34 +37,14 @@ namespace needle.Weavers.InputDevicesPatch
 
 
 		
-		public List<Vector3> Bounds = new List<Vector3>()
-		{
-			new Vector3(0, 0, 1),
-			new Vector3(1, 0, 1), 
-			new Vector3(1, 0, 0), 
-			new Vector3(0, 0, 1)
-		};
-
-		
-		private readonly Lazy<XRInputSubsystemDescriptor> descriptor = new Lazy<XRInputSubsystemDescriptor>(() =>
-		{
-			var desc = new XRInputSubsystemDescriptor();
-			Debug.Log("Creating a subsystem descriptor");
-			// desc.Create();
-			return desc;
-		});
-		
-		// implementation:
-
-
-		public XRInputSubsystemDescriptor subsystemDescriptor => descriptor.Value;
-
-		
 		internal uint GetIndex() => Index;
+
+		internal ISubsystemDescriptor m_SubsystemDescriptor;
 
 		public void Start()
 		{
-			Debug.Log("Starting");
+			Debug.Log("Starting2 " + this);
+			m_SubsystemDescriptor = new XRInputSubsystemDescriptor();
 		}
 
 		public void Stop()

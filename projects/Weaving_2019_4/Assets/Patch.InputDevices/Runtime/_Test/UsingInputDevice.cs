@@ -26,7 +26,6 @@ namespace _Tests.Weaver_InputDevice
 			device.DeviceCharacteristics = InputDeviceCharacteristics.HeadMounted | InputDeviceCharacteristics.TrackedDevice;
 
 			XRInputSubsystem_Patch.SupportedTrackingOriginMode = TrackingOriginModeFlags.Device | TrackingOriginModeFlags.Floor;
-			XRInputSubsystem_Patch.CurrentTrackingMode = TrackingOriginModeFlags.Floor;
 
 			device.AddUsage(new InputFeatureUsage<bool>("isTracked"), () => true);
 			device.AddUsage(new InputFeatureUsage<InputTrackingState>("trackingState"), () => InputTrackingState.Position | InputTrackingState.Rotation);
@@ -58,6 +57,9 @@ namespace _Tests.Weaver_InputDevice
 			var list = new List<InputDevice>();
 			InputDevices.GetDevices(list);
 			var headDevice = InputDevices.GetDeviceAtXRNode(XRNode.Head);
+			
+			XRInputSubsystem_Patch.CurrentTrackingMode = Random.value > .5 ? TrackingOriginModeFlags.Device : TrackingOriginModeFlags.Floor;
+			
 			if (Text)
 			{
 				Text.text = "Frame=" + Time.frameCount;
