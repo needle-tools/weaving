@@ -12,5 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 0}
   m_Name: 
   m_EditorClassIdentifier: needle.weaver.editor:needle.Weaver:WeaverSettings
-  PatchOnBuild: 0
+  PatchOnBuild: 1
   DisabledPatches: []

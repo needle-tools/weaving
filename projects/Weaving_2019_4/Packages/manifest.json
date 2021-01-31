@@ -1,6 +1,5 @@
 {
   "dependencies": {
-    "com.needle.editorpatching": "file:../../../modules/editorpatching/package",
     "com.needle.weaver": "file:../../../package",
     "com.unity.collab-proxy": "1.3.9",
     "com.unity.ide.rider": "3.0.3",

@@ -1,33 +1,31 @@
 using System;
-using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
-using HarmonyLib;
 
 namespace needle.Weaver
 {
 	public static class MethodBaseExtensions
 	{
 		// from harmony GeneralExtensions.FullDescription, should match what cecil fullname outputs for method definitions
-		public static string FullName(this MethodBase member)
-		{
-			if (member == (MethodBase) null)
-				return "null";
-			var returnedType = AccessTools.GetReturnedType(member);
-			var stringBuilder = new StringBuilder();
-			// if (member.IsStatic)
-			// 	stringBuilder.Append("static ");
-			// if (member.IsAbstract)
-			// 	stringBuilder.Append("abstract ");
-			// if (member.IsVirtual)
-			// 	stringBuilder.Append("virtual ");
-			stringBuilder.Append(returnedType.FullName() + " ");
-			if (member.DeclaringType != (Type) null)
-				stringBuilder.Append(member.DeclaringType.FullName() + "::");
-			var str = member.GetParameters().Join(p => p.ParameterType.FullName());
-			stringBuilder.Append(member.Name + "(" + str + ")");
-			return stringBuilder.ToString();
-		}
+		// public static string FullName(this MethodBase member)
+		// {
+		// 	if (member == (MethodBase) null)
+		// 		return "null";
+		// 	var returnedType = AccessTools.GetReturnedType(member);
+		// 	var stringBuilder = new StringBuilder();
+		// 	// if (member.IsStatic)
+		// 	// 	stringBuilder.Append("static ");
+		// 	// if (member.IsAbstract)
+		// 	// 	stringBuilder.Append("abstract ");
+		// 	// if (member.IsVirtual)
+		// 	// 	stringBuilder.Append("virtual ");
+		// 	stringBuilder.Append(returnedType.FullName() + " ");
+		// 	if (member.DeclaringType != (Type) null)
+		// 		stringBuilder.Append(member.DeclaringType.FullName() + "::");
+		// 	var str = member.GetParameters().Join(p => p.ParameterType.FullName());
+		// 	stringBuilder.Append(member.Name + "(" + str + ")");
+		// 	return stringBuilder.ToString();
+		// }
 		
 		public static string FullName(this Type type)
 		{

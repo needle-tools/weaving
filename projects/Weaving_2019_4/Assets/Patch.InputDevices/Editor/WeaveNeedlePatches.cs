@@ -1,12 +1,9 @@
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using Fody;
-using HarmonyLib;
 using Mono.Cecil;
 using needle.Weaver;
 using UnityEngine;
-using UnityEngine.XR;
 using TypeCache = UnityEditor.TypeCache;
 
 namespace Patch.InputDevices.Editor
