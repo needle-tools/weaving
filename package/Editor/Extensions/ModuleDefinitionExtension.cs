@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Mono.Cecil;
 using UnityEngine;
 
@@ -8,31 +9,34 @@ namespace needle.Weaver
 	{
 		public static void ForEachMethod(this ModuleDefinition module, Action<MethodDefinition> callback)
 		{
-			for (var index = 0; index < module.Types.Count; index++)
-			{
-				var type = module.Types[index];
-				foreach (var entry in type.Methods)
-				{
-					callback(entry);
-				}
-
-				// TODO: could we patch methods in other assemblies this way?
-				// base type is a definition apparently
-				// if (type.BaseType != null)
-				// {
-				// 	Debug.Log(type.BaseType + " - " + type.BaseType.IsDefinition);
-				// }
-			}
+			module.EnumerateWithNesting(t => t.Methods, callback);
 		}
 		
 		public static void ForEachProperty(this ModuleDefinition module, Action<PropertyDefinition> callback)
 		{
-			foreach(var type in module.Types)
+			module.EnumerateWithNesting(t => t.Properties, callback);
+		}
+
+		public static void EnumerateWithNesting<T>(this ModuleDefinition module, Func<TypeDefinition, IEnumerable<T>> types, Action<T> callback)
+		{
+			// recurse
+			void Enumerate(TypeDefinition def)
 			{
-				foreach (var entry in type.Properties)
+				foreach (var entry in types(def))
 				{
 					callback(entry);
 				}
+				
+				// loop through all nested types
+				foreach (var nt in def.NestedTypes)
+				{
+					Enumerate(nt);
+				}
+			}
+			
+			foreach(var type in module.Types)
+			{
+				Enumerate(type);
 			}
 		}
 

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using Mono.Cecil;
 using UnityEditor;
+using UnityEngine;
 
 namespace needle.Weaver
 {
@@ -27,7 +28,8 @@ namespace needle.Weaver
 			var marked = MarkedTypes;
 			var available = GetPatches<TInfo>(marked);
 			res = TryFindPatchMember(target, available);
-			return res.patch != null && IsEnabled(res.attribute, res.patch);
+			if (res.patch == null) return false;
+			return !skipDisabled || IsEnabled(res.attribute, res.patch);
 		}
 
 		public static bool IsEnabled(NeedlePatch attribute, MemberInfo member)
@@ -53,6 +55,7 @@ namespace needle.Weaver
 				// loop through attributes on class
 				if (type.GetCustomAttributes(typeof(NeedlePatch), true) is NeedlePatch[] nps)
 				{
+					// Debug.Log(type + "\n" + string.Join("\n", members));
 					foreach (var np in nps)
 					{
 						// if any attribute has a full type name add all its members of typ T with that full name as the base class name to patch
@@ -82,6 +85,7 @@ namespace needle.Weaver
 			where TMember : MemberInfo
 		{
 			var entryFullName = target.DeclaringType.FullName + "." + target.Name;
+			// Debug.Log(entryFullName);
 			foreach (var kvp in dict)
 			{
 				// we baseName is the fullname of the class for the type we want to patch
@@ -97,6 +101,7 @@ namespace needle.Weaver
 						{
 							// var fn = member.ReflectedType;
 							// np.ResolveFullNameFromParentIfNull(fn, member.Name);
+							
 
 							if (string.IsNullOrEmpty(np.FullName)) continue;
 
@@ -113,6 +118,8 @@ namespace needle.Weaver
 					}
 
 					var name = patch.FullName + "." + member.Name;
+					if (name.Contains("+")) // nested classes are separated in patch FullName with "+" bit om entryFullName with a "/"
+						name = name.Replace("+", "/");
 					if (name == entryFullName)
 					{
 						return (member, patch);
@@ -120,7 +127,8 @@ namespace needle.Weaver
 				}
 			}
 
-			// Debug.LogWarning("Did not find patch for " + entry);
+			
+			// Debug.LogWarning("Did not find patch for " + entryFullName);
 			return default;
 		}
 
