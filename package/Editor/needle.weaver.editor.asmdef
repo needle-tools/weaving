@@ -1,5 +1,6 @@
 {
     "name": "needle.weaver.editor",
+    "rootNamespace": "",
     "references": [
         "GUID:7725b87acc3b7fd47b635a082a6f111c",
         "GUID:336404f647c61ce4db3b999a77d5db23"
@@ -9,8 +10,14 @@
     ],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
-    "overrideReferences": false,
-    "precompiledReferences": [],
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "Weaver.Mono.Cecil.dll",
+        "Weaver.Mono.Cecil.Pdb.dll",
+        "Weaver.Mono.Cecil.Rocks.dll",
+        "Weaver.Mono.Reflection.dll",
+        "Weaver.FodyHelpers.dll"
+    ],
     "autoReferenced": false,
     "defineConstraints": [],
     "versionDefines": [
